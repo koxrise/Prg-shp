@@ -253,6 +253,27 @@ a {
   line-height: 1.6;
 }
 
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.hero-tag {
+  min-height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #232d47;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .section-card,
 .form-panel,
 .cart-panel,
@@ -581,6 +602,14 @@ a {
 
   .product-price {
     font-size: 18px;
+  }
+
+  .hero-tags {
+    gap: 8px;
+  }
+
+  .hero-tag {
+    font-size: 13px;
   }
 }
 
