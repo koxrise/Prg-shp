@@ -1,152 +1,506 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Paragon Shop</title>
+:root {
+  --tg-bg: #f7f4ef;
+  --tg-secondary-bg: #ffffff;
+  --tg-text: #2f251f;
+  --tg-hint: #786a61;
+  --tg-link: #8a5a34;
+  --tg-button: #6c4b35;
+  --tg-button-text: #ffffff;
+  --tg-border: rgba(98, 71, 52, 0.14);
+  --tg-soft: #efe4d7;
+  --tg-soft-2: #f7efe6;
+  --shadow: 0 12px 30px rgba(60, 38, 24, 0.10);
+  --radius-xl: 24px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+}
 
-  <meta http-equiv="cache-control" content="no-cache" />
-  <meta http-equiv="expires" content="0" />
-  <meta http-equiv="pragma" content="no-cache" />
+* {
+  box-sizing: border-box;
+}
 
-  <link rel="stylesheet" href="styles.css?v=8" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-  <div class="app">
-    <header class="header">
-      <div class="header-top">
-        <button class="icon-btn" type="button">☰</button>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-family: Inter, Arial, sans-serif;
+  min-height: 100%;
+}
 
-        <div class="brand">
-          <div class="brand-logo">P</div>
-          <div class="brand-text">
-            <div class="brand-title">Paragon Shop</div>
-            <div class="brand-subtitle">Изделия из дерева</div>
-          </div>
-        </div>
+body {
+  min-height: 100vh;
+}
 
-        <button class="icon-btn" type="button">⌕</button>
-      </div>
+button,
+input,
+textarea {
+  font: inherit;
+}
 
-      <div class="top-actions">
-        <button class="pill-btn active" data-page="catalog">Каталог</button>
-        <button class="pill-btn" data-page="custom">Свой заказ</button>
-        <button class="pill-btn cart-hidden" data-page="cart" id="topCartBtn">
-          Корзина <span id="topCartCount">0</span>
-        </button>
-      </div>
-    </header>
+a {
+  color: inherit;
+}
 
-    <main class="content">
-      <section class="page active" id="page-catalog">
-        <section class="hero">
-          <div class="hero-badge">Ручная работа</div>
-          <h1>Красивые вещи из дерева и заказы по твоему описанию</h1>
-          <p>
-            Готовые изделия, подарки, DnD-аксессуары и кастомные заказы с доставкой по России.
-          </p>
-        </section>
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
 
-        <section class="filters">
-          <div class="filter-chip">Все товары</div>
-          <div class="filter-chip">DnD</div>
-          <div class="filter-chip">Сувениры</div>
-          <div class="filter-chip">Подарки</div>
-        </section>
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 48px 1fr 58px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
+  background: linear-gradient(180deg, rgba(247,244,239,0.96) 0%, rgba(247,244,239,0.92) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--tg-border);
+}
 
-        <section class="search-box">
-          <input type="text" id="searchInput" placeholder="Поиск по товарам..." />
-        </section>
+.icon-btn,
+.cart-fab {
+  border: 1px solid var(--tg-border);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 14px;
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
 
-        <section class="products-grid" id="productsList"></section>
-      </section>
+.icon-btn {
+  font-size: 22px;
+}
 
-      <section class="page" id="page-cart">
-        <section class="section-box">
-          <div class="section-head">
-            <h2>Корзина</h2>
-            <p>Проверь список перед отправкой заявки.</p>
-          </div>
+.cart-fab {
+  position: relative;
+}
 
-          <div id="cartEmpty" class="empty-box">
-            <div class="empty-icon">🧺</div>
-            <div class="empty-title">Корзина пока пустая</div>
-            <div class="empty-text">Добавь товар из каталога.</div>
-          </div>
+.cart-fab-icon {
+  font-size: 18px;
+}
 
-          <div id="cartContent" class="hidden">
-            <div id="cartItems" class="cart-list"></div>
+.cart-fab-count {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid var(--tg-bg);
+}
 
-            <div class="summary-box">
-              <div class="summary-row">
-                <span>Итого</span>
-                <strong id="cartTotal">0 ₽</strong>
-              </div>
+.brand-block {
+  min-width: 0;
+}
 
-              <label class="check-row">
-                <input type="checkbox" id="deliveryCheckbox" />
-                <span>Нужна доставка</span>
-              </label>
+.brand-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tg-link);
+  margin-bottom: 2px;
+}
 
-              <button class="primary-btn full-width" id="submitCartOrderBtn">Оформить заказ</button>
-            </div>
-          </div>
-        </section>
-      </section>
+.brand-subtitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-      <section class="page" id="page-custom">
-        <section class="section-box">
-          <div class="section-head">
-            <h2>Свой заказ</h2>
-            <p>Опиши, что нужно изготовить.</p>
-          </div>
+.screen-wrap {
+  padding: 14px 16px 18px;
+}
 
-          <div class="custom-box">
-            <label class="field-title" for="customText">Описание</label>
-            <textarea
-              id="customText"
-              rows="7"
-              placeholder="Например: дайс-трей с гравировкой, сундук, магнит, брелок, шкатулка..."
-            ></textarea>
+.screen {
+  display: none;
+}
 
-            <label class="check-row">
-              <input type="checkbox" id="customDeliveryCheckbox" />
-              <span>Нужна доставка</span>
-            </label>
+.screen.active {
+  display: block;
+}
 
-            <button class="primary-btn full-width" id="submitCustomOrderBtn">Отправить заявку</button>
-          </div>
-        </section>
-      </section>
-    </main>
+.hero-card,
+.info-card,
+.panel,
+.product-card {
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--tg-border);
+  box-shadow: var(--shadow);
+}
 
-    <section class="contacts-strip">
-      <a href="https://t.me/Paragon_shopbot" target="_blank" rel="noopener noreferrer">Написать</a>
-      <a href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
-      <a href="tel:+79322090663">+7 932 209-06-63</a>
-    </section>
+.hero-card {
+  border-radius: 28px;
+  padding: 22px 18px;
+  background: radial-gradient(circle at top right, rgba(138, 90, 52, 0.12), transparent 30%), linear-gradient(145deg, #fffdfa 0%, #f4ece2 100%);
+}
 
-    <nav class="bottom-nav">
-      <button class="bottom-btn active" data-page="catalog">
-        <span>▦</span>
-        <small>Каталог</small>
-      </button>
+.hero-badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(108, 75, 53, 0.10);
+  color: var(--tg-link);
+  font-size: 12px;
+  font-weight: 700;
+}
 
-      <button class="bottom-btn cart-hidden" data-page="cart" id="bottomCartBtn">
-        <span>◉</span>
-        <small>Корзина</small>
-      </button>
+.hero-card h1 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 8vw, 42px);
+  line-height: 1.05;
+}
 
-      <button class="bottom-btn" data-page="custom">
-        <span>✎</span>
-        <small>Свой заказ</small>
-      </button>
-    </nav>
+.hero-text {
+  margin: 0;
+  color: var(--tg-hint);
+  line-height: 1.6;
+}
 
-    <div class="toast" id="toast"></div>
-  </div>
+.menu-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
 
-  <script src="script.js?v=8"></script>
-</body>
-</html>
+.menu-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-secondary-bg);
+  border-radius: 24px;
+  padding: 18px;
+  color: var(--tg-text);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.menu-card-icon {
+  font-size: 30px;
+  margin-bottom: 12px;
+}
+
+.menu-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.menu-card-text {
+  color: var(--tg-hint);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.info-card,
+.panel {
+  border-radius: 20px;
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.info-card h2,
+.section-head h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.info-card p,
+.section-head p {
+  margin: 0;
+  color: var(--tg-hint);
+  line-height: 1.6;
+}
+
+.section-head {
+  margin-bottom: 14px;
+}
+
+.products-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.product-card {
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  background: var(--tg-soft);
+}
+
+.product-body {
+  padding: 16px;
+}
+
+.product-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: start;
+}
+
+.product-title {
+  margin: 0;
+  font-size: 22px;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--tg-link);
+}
+
+.product-desc,
+.product-meta,
+.product-delivery-note {
+  color: var(--tg-hint);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.product-meta {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--tg-soft-2);
+}
+
+.product-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.remove-btn,
+.qty-btn {
+  border: none;
+  border-radius: 16px;
+  min-height: 46px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-btn {
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+}
+
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: var(--tg-soft);
+  color: var(--tg-text);
+}
+
+.ghost-btn {
+  background: transparent;
+  border: 1px solid var(--tg-border);
+  color: var(--tg-text);
+}
+
+.form-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 16px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--tg-text);
+}
+
+.checkbox-important {
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--tg-soft-2);
+  border: 1px dashed rgba(138, 90, 52, 0.24);
+}
+
+.cart-item {
+  display: grid;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tg-border);
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.cart-name {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.cart-line {
+  color: var(--tg-hint);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  background: var(--tg-soft);
+  color: var(--tg-text);
+}
+
+.qty-value {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.remove-btn {
+  background: #f7e3e3;
+  color: #9f4545;
+}
+
+.cart-summary {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--tg-border);
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--tg-border);
+  background: rgba(247,244,239,0.96);
+  backdrop-filter: blur(12px);
+}
+
+.footer-link {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 16px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--tg-border);
+  box-shadow: var(--shadow);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  background: #2c2622;
+  color: #fff;
+  padding: 14px 16px;
+  border-radius: 14px;
+  z-index: 999;
+  box-shadow: 0 14px 35px rgba(0,0,0,0.22);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.empty-state-box {
+  border: 1px dashed var(--tg-border);
+  border-radius: 18px;
+  padding: 18px;
+  color: var(--tg-hint);
+  background: var(--tg-secondary-bg);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (min-width: 840px) {
+  .screen-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
