@@ -1,5 +1,22 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-ohe-X-XvRIBiAIss3Qzr8Q2tAH_8AhA1mC-fWC3e5lFeaEtZa-Iry61XHrhja5uV5Q/exec";
 
+async function sendToGoogleSheets(payload) {
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("sendToGoogleSheets error:", error);
+    return false;
+  }
+}
+
 const PRODUCTS = [
   {
     id: "dicejail",
