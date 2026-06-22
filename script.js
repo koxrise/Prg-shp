@@ -2,78 +2,128 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const YOOMONEY_RECEIVER = "4100XXXXXXXXXXXX";
-
 const products = [
   {
     id: "dicejail",
     name: "DiceJail",
-    price: 199,
-    description: "Описание товара DiceJail. Коротко и понятно.",
-    image: "https://picsum.photos/seed/dicejail/600/600"
+    price: 1500,
+    description: "Тюрьма для самых непослушных дайсов. Исполнена из дерева, все 4 стороны поднимаются вверх. Возможно исполнение в трёх цветах.",
+    size: "Размеры: 10 × 10 × 11 см",
+    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg",
+    payment_url: "https://yookassa.ru/my/i/ajivKK4ijE__/l",
+    contact_url: "https://t.me/cringeator"
   },
   {
-    id: "goldguide",
-    name: "Gold Guide",
-    price: 299,
-    description: "Цифровой материал или инструкция.",
-    image: "https://picsum.photos/seed/goldguide/600/600"
-  },
-  {
-    id: "vipaccess",
-    name: "VIP Access",
-    price: 499,
-    description: "Доступ к закрытому материалу или услуге.",
-    image: "https://picsum.photos/seed/vipaccess/600/600"
+    id: "dicetray",
+    name: "Дайс трей",
+    price: 1500,
+    description: "Лоток для кубиков, идеален для настольных игр. Практичный, красивый и удобный аксессуар для игровых вечеров.",
+    size: "Размеры: 21 × 21 × 3 см",
+    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg",
+    payment_url: "https://yookassa.ru/my/i/ajivPXotscnv/l",
+    contact_url: "https://t.me/cringeator"
   }
 ];
 
-function buildYooMoneyLink(product) {
-  const label = `product_${product.id}_${Date.now()}`;
-  const params = new URLSearchParams({
-    receiver: YOOMONEY_RECEIVER,
-    "quickpay-form": "shop",
-    targets: product.name,
-    paymentType: "AC",
-    sum: product.price,
-    label: label
-  });
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  return `https://yoomoney.ru/quickpay/confirm.xml?${params.toString()}`;
+function showToast(text) {
+  const toast = document.getElementById("toast");
+  toast.textContent = text;
+  toast.classList.remove("hidden");
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3200);
 }
 
 function renderProducts() {
   const container = document.getElementById("products");
 
-  container.innerHTML = products.map(product => {
-    const payLink = buildYooMoneyLink(product);
-
-    return `
-      <article class="card">
-        <img src="${product.image}" alt="${product.name}">
-        <div class="card-body">
-          <h3>${product.name}</h3>
+  container.innerHTML = products.map(product => `
+    <article class="product-card">
+      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
+      <div class="product-body">
+        <div class="product-title">
+          <h3>${escapeHtml(product.name)}</h3>
           <div class="price">${product.price} ₽</div>
-          <div class="desc">${product.description}</div>
-          <div class="actions">
-            <a class="btn btn-primary" href="${payLink}" target="_blank" rel="noopener noreferrer">
-              Оплатить
-            </a>
-            <button class="btn btn-secondary" onclick="copyOrderInfo('${product.name}', '${product.id}')">
-              Реквизиты
-            </button>
+        </div>
+
+        <div class="product-desc">${escapeHtml(product.description)}</div>
+        <div class="meta">${escapeHtml(product.size)}</div>
+
+        <div class="delivery-box">
+          <label class="delivery-top">
+            <input type="checkbox" id="delivery_${escapeHtml(product.id)}">
+            <span>Нужна доставка</span>
+          </label>
+          <div class="delivery-note" id="delivery_note_${escapeHtml(product.id)}">
+            После оплаты администратор свяжется с вами, уточнит адрес, способ отправки и рассчитает стоимость доставки.
           </div>
         </div>
-      </article>
-    `;
-  }).join("");
+
+        <div class="actions">
+          <button class="btn btn-primary" onclick="submitOrder('${escapeHtml(product.id)}')">
+            Оформить заказ
+          </button>
+
+          <a class="btn btn-secondary" href="${escapeHtml(product.payment_url)}" target="_blank" rel="noopener noreferrer">
+            Оплатить через ЮMoney
+          </a>
+
+          <a class="btn btn-outline" href="${escapeHtml(product.contact_url)}" target="_blank" rel="noopener noreferrer">
+            Написать администратору
+          </a>
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  products.forEach(product => {
+    const checkbox = document.getElementById(`delivery_${product.id}`);
+    const note = document.getElementById(`delivery_note_${product.id}`);
+
+    checkbox.addEventListener("change", () => {
+      note.classList.toggle("active", checkbox.checked);
+    });
+  });
 }
 
-function copyOrderInfo(productName, productId) {
-  const text = `Я оплатил товар ${productName} (${productId}).`;
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Текст скопирован. Его можно отправить администратору после оплаты.");
-  });
+function submitOrder(productId) {
+  const product = products.find(item => item.id === productId);
+  if (!product) {
+    showToast("Товар не найден.");
+    return;
+  }
+
+  const delivery = document.getElementById(`delivery_${product.id}`)?.checked ? "yes" : "no";
+  const user = tg.initDataUnsafe?.user || {};
+
+  const payload = {
+    type: "order",
+    product_id: product.id,
+    product_name: product.name,
+    price: product.price,
+    delivery: delivery,
+    user_id: user.id || null,
+    username: user.username || "",
+    first_name: user.first_name || "",
+    last_name: user.last_name || "",
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    tg.sendData(JSON.stringify(payload));
+  } catch (error) {
+    console.error(error);
+    showToast("Не удалось отправить заказ в бота. Напишите администратору вручную.");
+  }
 }
 
 renderProducts();
