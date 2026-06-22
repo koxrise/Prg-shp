@@ -12,13 +12,13 @@ const PRODUCTS = [
     id: 1,
     name: "Дайс-трей из дерева",
     price: 1900,
-    description: "Ручная работа, удобен для настольных игр, хранения кубиков и красивой подачи игрового набора."
+    description: "Ручная работа для хранения кубиков и красивой игры."
   },
   {
     id: 2,
     name: "Деревянный сундук",
     price: 3500,
-    description: "Сувенирный сундук для хранения мелочей, подарков, аксессуаров и атмосферных тематических наборов."
+    description: "Сувенирный сундук для аксессуаров, подарков и мелочей."
   }
 ];
 
@@ -61,24 +61,14 @@ function getUserData() {
 function switchPage(page) {
   state.currentPage = page;
 
-  document.querySelectorAll(".page").forEach((el) => {
-    el.classList.remove("active");
-  });
+  document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+  document.querySelectorAll(".pill-btn").forEach((el) => el.classList.remove("active"));
+  document.querySelectorAll(".bottom-btn").forEach((el) => el.classList.remove("active"));
 
-  document.querySelectorAll(".top-tab").forEach((el) => {
-    el.classList.remove("active");
-  });
+  const pageEl = document.getElementById(`page-${page}`);
+  if (pageEl) pageEl.classList.add("active");
 
-  document.querySelectorAll(".bottom-nav-btn").forEach((el) => {
-    el.classList.remove("active");
-  });
-
-  const pageElement = document.getElementById(`page-${page}`);
-  if (pageElement) pageElement.classList.add("active");
-
-  document.querySelectorAll(`[data-page="${page}"]`).forEach((el) => {
-    el.classList.add("active");
-  });
+  document.querySelectorAll(`[data-page="${page}"]`).forEach((el) => el.classList.add("active"));
 }
 
 function renderProducts(filter = "") {
@@ -96,10 +86,10 @@ function renderProducts(filter = "") {
 
   if (!filtered.length) {
     list.innerHTML = `
-      <section class="section-card">
-        <div class="empty-state">
+      <section class="section-box">
+        <div class="empty-box">
           <div class="empty-title">Ничего не найдено</div>
-          <div class="empty-text">Попробуй изменить запрос поиска.</div>
+          <div class="empty-text">Попробуй изменить запрос.</div>
         </div>
       </section>
     `;
@@ -110,13 +100,14 @@ function renderProducts(filter = "") {
     const card = document.createElement("article");
     card.className = "product-card";
     card.innerHTML = `
-      <div class="product-top">
+      <div class="product-image"></div>
+      <div class="product-row">
         <h3 class="product-title">${item.name}</h3>
         <div class="product-price">${formatPrice(item.price)}</div>
       </div>
       <div class="product-desc">${item.description}</div>
       <div class="card-actions">
-        <button class="main-btn" data-add-id="${item.id}">В корзину</button>
+        <button class="primary-btn" data-add-id="${item.id}">В корзину</button>
       </div>
     `;
     list.appendChild(card);
@@ -133,10 +124,10 @@ function addToCart(productId) {
   const found = PRODUCTS.find((item) => item.id === productId);
   if (!found) return;
 
-  const inCart = state.cart.find((item) => item.id === productId);
+  const existing = state.cart.find((item) => item.id === productId);
 
-  if (inCart) {
-    inCart.quantity += 1;
+  if (existing) {
+    existing.quantity += 1;
   } else {
     state.cart.push({
       ...found,
@@ -188,13 +179,13 @@ function updateCartUI() {
   topCartCount.textContent = count;
 
   if (count > 0) {
-    topCartBtn.classList.remove("cart-tab-hidden");
-    bottomCartBtn.classList.remove("cart-tab-hidden");
+    topCartBtn.classList.remove("cart-hidden");
+    bottomCartBtn.classList.remove("cart-hidden");
     cartEmpty.classList.add("hidden");
     cartContent.classList.remove("hidden");
   } else {
-    topCartBtn.classList.add("cart-tab-hidden");
-    bottomCartBtn.classList.add("cart-tab-hidden");
+    topCartBtn.classList.add("cart-hidden");
+    bottomCartBtn.classList.add("cart-hidden");
     cartEmpty.classList.remove("hidden");
     cartContent.classList.add("hidden");
 
@@ -209,39 +200,29 @@ function updateCartUI() {
     const row = document.createElement("div");
     row.className = "cart-item";
     row.innerHTML = `
-      <div class="cart-item-main">
-        <div>
-          <h3 class="cart-item-name">${item.name}</h3>
-          <div class="cart-item-meta">${formatPrice(item.price)} × ${item.quantity}</div>
-          <div class="cart-item-meta">Сумма: ${formatPrice(item.price * item.quantity)}</div>
-        </div>
-      </div>
+      <h3 class="cart-item-title">${item.name}</h3>
+      <div class="cart-item-meta">${formatPrice(item.price)} × ${item.quantity}</div>
+      <div class="cart-item-meta">Сумма: ${formatPrice(item.price * item.quantity)}</div>
 
-      <div class="cart-controls">
-        <button class="qty-btn" data-minus-id="${item.id}">−</button>
-        <button class="qty-btn" data-plus-id="${item.id}">+</button>
-        <button class="remove-btn" data-remove-id="${item.id}">Удалить</button>
+      <div class="item-actions" style="margin-top:12px;">
+        <button class="soft-btn" data-minus-id="${item.id}">−</button>
+        <button class="soft-btn" data-plus-id="${item.id}">+</button>
+        <button class="small-btn" data-remove-id="${item.id}">Удалить</button>
       </div>
     `;
     cartItems.appendChild(row);
   });
 
   document.querySelectorAll("[data-minus-id]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      changeQuantity(Number(btn.dataset.minusId), -1);
-    });
+    btn.addEventListener("click", () => changeQuantity(Number(btn.dataset.minusId), -1));
   });
 
   document.querySelectorAll("[data-plus-id]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      changeQuantity(Number(btn.dataset.plusId), 1);
-    });
+    btn.addEventListener("click", () => changeQuantity(Number(btn.dataset.plusId), 1));
   });
 
   document.querySelectorAll("[data-remove-id]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      removeFromCart(Number(btn.dataset.removeId));
-    });
+    btn.addEventListener("click", () => removeFromCart(Number(btn.dataset.removeId)));
   });
 
   cartTotal.textContent = formatPrice(getCartTotal());
