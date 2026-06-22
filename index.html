@@ -9,53 +9,53 @@
   <meta http-equiv="expires" content="0" />
   <meta http-equiv="pragma" content="no-cache" />
 
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="top-header">
-      <div class="brand-row">
-        <div class="brand-box">
-          <img
-            src="https://i.ibb.co/dsjr3mbz/image.jpg"
-            alt="Paragon logo"
-            class="brand-logo"
-            width="44"
-            height="44"
-          />
-          <div class="brand-texts">
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <button class="icon-btn" type="button">☰</button>
+
+        <div class="brand">
+          <div class="brand-logo">P</div>
+          <div class="brand-text">
             <div class="brand-title">Paragon Shop</div>
-            <div class="brand-subtitle">Изделия из дерева и кастомные заказы</div>
+            <div class="brand-subtitle">Изделия из дерева</div>
           </div>
         </div>
 
-        <a class="write-btn" href="https://t.me/Paragon_shopbot" target="_blank" rel="noopener noreferrer">
-          Написать
-        </a>
+        <button class="icon-btn" type="button">⌕</button>
       </div>
 
-      <div class="top-tabs">
-        <button class="top-tab active" data-page="catalog">Каталог</button>
-        <button class="top-tab" data-page="custom">Свой заказ</button>
-        <button class="top-tab cart-tab-hidden" data-page="cart" id="topCartBtn">
+      <div class="top-actions">
+        <button class="pill-btn active" data-page="catalog">Каталог</button>
+        <button class="pill-btn" data-page="custom">Свой заказ</button>
+        <button class="pill-btn cart-hidden" data-page="cart" id="topCartBtn">
           Корзина <span id="topCartCount">0</span>
         </button>
       </div>
     </header>
 
-    <main class="main-content">
+    <main class="content">
       <section class="page active" id="page-catalog">
-        <section class="hero-card">
-          <div class="hero-badge">Ручная работа • Доставка по России</div>
-          <h1>Изделия, которые хочется рассматривать вживую</h1>
+        <section class="hero">
+          <div class="hero-badge">Ручная работа</div>
+          <h1>Красивые вещи из дерева и заказы по твоему описанию</h1>
           <p>
-            Сувениры, DnD-аксессуары, брелоки, сундуки, подарки и индивидуальные изделия из дерева.
-            Можно выбрать готовый товар или оставить свой запрос.
+            Готовые изделия, подарки, DnD-аксессуары и кастомные заказы с доставкой по России.
           </p>
         </section>
 
-        <section class="search-card">
+        <section class="filters">
+          <div class="filter-chip">Все товары</div>
+          <div class="filter-chip">DnD</div>
+          <div class="filter-chip">Сувениры</div>
+          <div class="filter-chip">Подарки</div>
+        </section>
+
+        <section class="search-box">
           <input type="text" id="searchInput" placeholder="Поиск по товарам..." />
         </section>
 
@@ -63,91 +63,90 @@
       </section>
 
       <section class="page" id="page-cart">
-        <section class="section-card">
-          <div class="section-title-row">
+        <section class="section-box">
+          <div class="section-head">
             <h2>Корзина</h2>
-            <p>Проверь заказ перед отправкой.</p>
+            <p>Проверь список перед отправкой заявки.</p>
           </div>
 
-          <div id="cartEmpty" class="empty-state">
-            <div class="empty-icon">🛒</div>
+          <div id="cartEmpty" class="empty-box">
+            <div class="empty-icon">🧺</div>
             <div class="empty-title">Корзина пока пустая</div>
-            <div class="empty-text">Добавь товар из каталога, и он появится здесь.</div>
+            <div class="empty-text">Добавь товар из каталога.</div>
           </div>
 
           <div id="cartContent" class="hidden">
-            <div id="cartItems" class="cart-items"></div>
+            <div id="cartItems" class="cart-list"></div>
 
-            <div class="summary-card">
-              <div class="summary-line">
+            <div class="summary-box">
+              <div class="summary-row">
                 <span>Итого</span>
                 <strong id="cartTotal">0 ₽</strong>
               </div>
 
-              <label class="checkbox-line">
+              <label class="check-row">
                 <input type="checkbox" id="deliveryCheckbox" />
                 <span>Нужна доставка</span>
               </label>
 
-              <button class="main-btn full-btn" id="submitCartOrderBtn">Оформить заказ</button>
+              <button class="primary-btn full-width" id="submitCartOrderBtn">Оформить заказ</button>
             </div>
           </div>
         </section>
       </section>
 
       <section class="page" id="page-custom">
-        <section class="section-card">
-          <div class="section-title-row">
+        <section class="section-box">
+          <div class="section-head">
             <h2>Свой заказ</h2>
-            <p>Опиши, что хочешь сделать на заказ.</p>
+            <p>Опиши, что нужно изготовить.</p>
           </div>
 
           <div class="custom-box">
-            <label class="field-label" for="customText">Описание заказа</label>
+            <label class="field-title" for="customText">Описание</label>
             <textarea
               id="customText"
               rows="7"
-              placeholder="Например: кастомный дайс-трей, шкатулка с гравировкой, магнит, сундук, подарочный набор..."
+              placeholder="Например: дайс-трей с гравировкой, сундук, магнит, брелок, шкатулка..."
             ></textarea>
 
-            <label class="checkbox-line">
+            <label class="check-row">
               <input type="checkbox" id="customDeliveryCheckbox" />
               <span>Нужна доставка</span>
             </label>
 
-            <button class="main-btn full-btn" id="submitCustomOrderBtn">Отправить заявку</button>
+            <button class="primary-btn full-width" id="submitCustomOrderBtn">Отправить заявку</button>
           </div>
         </section>
       </section>
     </main>
 
-    <footer class="bottom-info">
-      <div class="bottom-info-inner">
-        <a href="tel:+79322090663">+7 932 209-06-63</a>
-        <a href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
-      </div>
-    </footer>
+    <section class="contacts-strip">
+      <a href="https://t.me/Paragon_shopbot" target="_blank" rel="noopener noreferrer">Написать</a>
+      <a href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
+      <a href="tel:+79322090663">+7 932 209-06-63</a>
+    </section>
 
     <nav class="bottom-nav">
-      <button class="bottom-nav-btn active" data-page="catalog">
-        <span class="bottom-nav-icon">◼</span>
-        <span class="bottom-nav-text">Каталог</span>
+      <button class="bottom-btn active" data-page="catalog">
+        <span>▦</span>
+        <small>Каталог</small>
       </button>
 
-      <button class="bottom-nav-btn cart-tab-hidden" data-page="cart" id="bottomCartBtn">
-        <span class="bottom-nav-icon">◼</span>
-        <span class="bottom-nav-text">Корзина</span>
+      <button class="bottom-btn cart-hidden" data-page="cart" id="bottomCartBtn">
+        <span>◉</span>
+        <small>Корзина</small>
       </button>
 
-      <button class="bottom-nav-btn" data-page="custom">
-        <span class="bottom-nav-icon">◼</span>
-        <span class="bottom-nav-text">Свой заказ</span>
+      <button class="bottom-btn" data-page="custom">
+        <span>✎</span>
+        <small>Свой заказ</small>
       </button>
     </nav>
 
     <div class="toast" id="toast"></div>
   </div>
 
-  <script src="script.js?v=7"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>
