@@ -2,151 +2,140 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Paragon Shop</title>
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0f1320">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
+  <div class="app">
     <header class="topbar">
-      <button class="icon-btn hidden" id="backBtnInside" type="button" aria-label="Назад">
-        ←
-      </button>
-
-      <div class="brand-block">
-        <div class="brand-badge">Paragon Shop</div>
-        <div class="brand-subtitle">Изделия из дерева</div>
+      <div class="brand">
+        <div class="brand-avatar">P</div>
+        <div class="brand-texts">
+          <div class="brand-title">Paragon Shop</div>
+          <div class="brand-subtitle">Магазин изделий из дерева</div>
+        </div>
       </div>
 
-      <button class="cart-fab hidden" id="cartFab" type="button" aria-label="Корзина">
-        <span class="cart-fab-icon">🛒</span>
-        <span class="cart-fab-count" id="cartFabCount">0</span>
-      </button>
+      <div class="topbar-actions">
+        <button class="icon-button hidden" id="cartButton" type="button" aria-label="Корзина">
+          <span>🛒</span>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </div>
     </header>
 
-    <main class="screen-wrap">
-      <!-- Главная -->
-      <section class="screen active" id="screen-home">
+    <nav class="tabs">
+      <button class="tab-button active" type="button" data-screen="catalog">Каталог</button>
+      <button class="tab-button" type="button" data-screen="cart">Корзина</button>
+      <button class="tab-button" type="button" data-screen="custom">Кастомный заказ</button>
+    </nav>
+
+    <main class="main">
+      <section class="screen active" id="screen-catalog">
+        <div class="search-row">
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input id="searchInput" type="text" placeholder="Я ищу...">
+          </div>
+        </div>
+
         <div class="hero-card">
-          <div class="hero-badge">Mini App</div>
-          <h1>Удобный магазин внутри Telegram</h1>
-          <p class="hero-text">
-            Выберите готовый товар из каталога или отправьте заявку на изготовление под заказ.
-          </p>
+          <div class="hero-copy">
+            <h1>Каталог изделий</h1>
+            <p>
+              Выберите готовый товар, добавьте его в корзину или оплатите отдельно.
+            </p>
+          </div>
         </div>
 
-        <div class="menu-grid">
-          <button class="menu-card" type="button" data-nav="catalog">
-            <div class="menu-card-icon">🪵</div>
-            <div class="menu-card-title">Каталог</div>
-            <div class="menu-card-text">
-              Готовые товары с добавлением в корзину и отдельной оплатой.
-            </div>
-          </button>
-
-          <button class="menu-card" type="button" data-nav="custom">
-            <div class="menu-card-icon">✨</div>
-            <div class="menu-card-title">Изготовление под заказ Вашей идеи</div>
-            <div class="menu-card-text">
-              Опишите задумку, а администратор свяжется с вами в течение 24 часов.
-            </div>
-          </button>
-        </div>
-
-        <div class="info-card">
-          <h2>Как это работает</h2>
-          <p>
-            После оформления заявки администратор свяжется с вами, уточнит детали, пожелания,
-            доставку и подскажет дальнейшие шаги.
-          </p>
+        <div class="products-grid" id="productsGrid">
+          <div class="placeholder-card">Загрузка товаров...</div>
         </div>
       </section>
 
-      <!-- Каталог -->
-      <section class="screen" id="screen-catalog">
-        <div class="section-head">
-          <h2>Каталог</h2>
-          <p>Добавляйте товары в корзину или оплачивайте каждый товар отдельно.</p>
+      <section class="screen" id="screen-cart">
+        <div class="section-card">
+          <h2>Корзина</h2>
+          <p>Изменяйте количество товаров и отправляйте весь заказ одной заявкой.</p>
         </div>
-        <div id="productsGrid" class="products-grid">
-          <div class="empty-state-box">Загрузка каталога...</div>
+
+        <div class="cart-panel" id="cartPanel">
+          <div class="placeholder-card">Корзина пока пуста.</div>
         </div>
       </section>
 
-      <!-- Кастом -->
       <section class="screen" id="screen-custom">
-        <div class="section-head">
+        <div class="section-card">
           <h2>Изготовление под заказ Вашей идеи</h2>
           <p>
             После отправки заявки администратор свяжется с вами в течение 24 часов,
-            уточнит вопросы и предложит варианты реализации идеи.
+            уточнит детали и предложит варианты реализации.
           </p>
         </div>
 
-        <div class="panel">
-          <div class="form-grid">
-            <label class="field">
-              <span class="field-label">Название изделия</span>
-              <input id="customTitle" type="text" placeholder="Например: башня для кубиков">
-            </label>
+        <div class="form-panel">
+          <label class="field">
+            <span>Название изделия</span>
+            <input id="customTitle" type="text" placeholder="Например: органайзер для кубиков">
+          </label>
 
-            <label class="field">
-              <span class="field-label">Описание идеи</span>
-              <textarea id="customDescription" rows="5" placeholder="Опишите идею, стиль, детали, пожелания"></textarea>
-            </label>
+          <label class="field">
+            <span>Описание идеи</span>
+            <textarea id="customDescription" rows="5" placeholder="Опишите внешний вид, стиль, детали и пожелания"></textarea>
+          </label>
 
-            <label class="field">
-              <span class="field-label">Размеры (можно оставить пустым)</span>
-              <input id="customSize" type="text" placeholder="Например: 20×20×10 см">
-            </label>
+          <label class="field">
+            <span>Размеры (можно оставить пустым)</span>
+            <input id="customSize" type="text" placeholder="Например: 25×15×10 см">
+          </label>
 
-            <label class="field">
-              <span class="field-label">Количество</span>
-              <input id="customQty" type="number" min="1" value="1">
-            </label>
+          <label class="field">
+            <span>Количество</span>
+            <input id="customQty" type="number" min="1" value="1">
+          </label>
 
-            <label class="checkbox-row">
-              <input id="customDelivery" type="checkbox">
-              <span>Нужна доставка</span>
-            </label>
+          <label class="check-row">
+            <input id="customDelivery" type="checkbox">
+            <span>Нужна доставка</span>
+          </label>
 
-            <label class="checkbox-row checkbox-important">
-              <input id="customAccept" type="checkbox">
-              <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
-            </label>
+          <label class="check-row important-check">
+            <input id="customAccept" type="checkbox">
+            <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
+          </label>
 
-            <button class="primary-btn" id="customSubmitBtn" type="button">
-              Отправить заявку
-            </button>
-          </div>
+          <button class="primary-button" id="customSubmitButton" type="button">
+            Отправить заявку
+          </button>
         </div>
       </section>
 
-      <!-- Корзина -->
-      <section class="screen" id="screen-cart">
-        <div class="section-head">
-          <h2>Корзина</h2>
-          <p>Здесь можно изменить количество товаров и отправить весь заказ одной заявкой.</p>
-        </div>
+      <section class="screen" id="screen-contacts">
+        <div class="contacts-panel">
+          <h2>Контакты</h2>
 
-        <div class="panel" id="cartPanel">
-          <div class="empty-state-box">Корзина пока пуста.</div>
+          <div class="contacts-block">
+            <div class="contacts-label">Контактный телефон</div>
+            <a class="contact-line" href="tel:+79322090663">+7 932 209-06-63</a>
+          </div>
+
+          <div class="contacts-block">
+            <div class="contacts-label">Наши соц. сети</div>
+            <div class="social-links">
+              <a class="social-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Telegram</a>
+              <a class="social-link" href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
+            </div>
+          </div>
         </div>
       </section>
     </main>
 
-    <footer class="sticky-footer">
-      <a href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer" class="footer-link">
-        Написать администратору
-      </a>
-      <a href="https://t.me/paragon_create" target="_blank" rel="noopener noreferrer" class="footer-link">
-        Контакты
-      </a>
+    <footer class="footer-nav">
+      <a class="footer-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Написать</a>
+      <button class="footer-link footer-button" id="contactsOpenButton" type="button">Контакты</button>
     </footer>
   </div>
 
