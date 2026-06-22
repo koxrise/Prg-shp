@@ -1,632 +1,546 @@
-:root {
-  color-scheme: dark;
-  --bg: #0b1020;
-  --bg-soft: #13192b;
-  --panel: #151c2f;
-  --panel-2: #1a2238;
-  --card: #19233a;
-  --card-2: #202b44;
-  --text: #f3f5fb;
-  --muted: #9aa5bd;
-  --line: rgba(255, 255, 255, 0.08);
-  --accent: #6b6dff;
-  --accent-2: #8b5cf6;
-  --accent-text: #ffffff;
-  --danger: #ff7d7d;
-  --success: #7ee0a0;
-  --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 18px;
-  --radius-sm: 14px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  background:
-    radial-gradient(circle at top, rgba(104, 94, 255, 0.10), transparent 25%),
-    linear-gradient(180deg, #0b1020 0%, #0b1221 100%);
-  color: var(--text);
-  font-family: Inter, Arial, sans-serif;
-}
-
-body {
-  min-height: 100vh;
-}
-
-input,
-textarea,
-button {
-  font: inherit;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.app {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px 10px;
-  background: rgba(11, 16, 32, 0.92);
-  backdrop-filter: blur(14px);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.brand-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #203356, #2c4d7b);
-  color: #fff;
-  font-weight: 800;
-  box-shadow: var(--shadow);
-  flex: 0 0 auto;
-}
-
-.brand-texts {
-  min-width: 0;
-}
-
-.brand-title {
-  font-size: 16px;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.brand-subtitle {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-button {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-  color: var(--text);
-  cursor: pointer;
-  box-shadow: var(--shadow);
-}
-
-.cart-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  border: 2px solid var(--bg);
-}
-
-.tabs {
-  position: sticky;
-  top: 68px;
-  z-index: 19;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  padding: 0 16px 10px;
-  background: rgba(11, 16, 32, 0.92);
-  backdrop-filter: blur(14px);
-}
-
-.tab-button {
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-  color: var(--muted);
-  cursor: pointer;
-  font-weight: 700;
-  transition: 0.2s ease;
-  pointer-events: auto;
-}
-
-.tab-button.active {
-  background: linear-gradient(135deg, rgba(107,109,255,0.22), rgba(139,92,246,0.22));
-  color: var(--text);
-  border-color: rgba(130, 120, 255, 0.35);
-}
-
-.main {
-  padding: 10px 16px 18px;
-  max-width: 1120px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.screen {
-  display: none;
-}
-
-.screen.active {
-  display: block;
-}
-
-.search-row {
-  margin-bottom: 14px;
-}
-
-.search-box {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  align-items: center;
-  gap: 10px;
-  min-height: 50px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #0f162a, #141c31);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.25);
-}
-
-.search-icon {
-  color: var(--muted);
-  font-size: 18px;
-}
-
-.search-box input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text);
-}
-
-.search-box input::placeholder {
-  color: var(--muted);
-}
-
-.hero-card,
-.section-card,
-.form-panel,
-.cart-panel,
-.contacts-panel,
-.product-card,
-.placeholder-card {
-  background: linear-gradient(180deg, rgba(25,35,58,0.96), rgba(18,26,44,0.96));
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: var(--shadow);
-}
-
-.hero-card {
-  border-radius: 28px;
-  padding: 18px;
-  margin-bottom: 16px;
-}
-
-.hero-copy h1 {
-  margin: 0 0 8px;
-  font-size: clamp(24px, 4vw, 34px);
-}
-
-.hero-copy p,
-.section-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.hero-tag {
-  min-height: 40px;
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: #232d47;
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.section-card,
-.form-panel,
-.cart-panel,
-.contacts-panel {
-  border-radius: 24px;
-  padding: 18px;
-}
-
-.section-card {
-  margin-bottom: 14px;
-}
-
-.section-card h2,
-.contacts-panel h2 {
-  margin: 0 0 8px;
-  font-size: 24px;
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.product-card {
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-.product-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  background: #202b44;
-}
-
-.product-body {
-  padding: 16px;
-}
-
-.product-name {
-  margin: 0 0 6px;
-  font-size: 20px;
-  line-height: 1.2;
-}
-
-.product-price-old {
-  color: #7f8aa4;
-  font-size: 14px;
-  text-decoration: line-through;
-  margin-bottom: 2px;
-}
-
-.product-price {
-  color: #ff7db5;
-  font-size: 22px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.product-desc,
-.product-meta {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.product-meta {
-  margin-top: 10px;
-}
-
-.product-actions {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.primary-button,
-.secondary-button,
-.ghost-button,
-.remove-button,
-.qty-button {
-  min-height: 44px;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.primary-button {
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
-  color: var(--accent-text);
-}
-
-.secondary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #232d47;
-  color: var(--text);
-}
-
-.ghost-button {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line);
-}
-
-.form-panel {
-  display: grid;
-  gap: 14px;
-}
-
-.field {
-  display: grid;
-  gap: 8px;
-}
-
-.field span {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.field input,
-.field textarea {
-  width: 100%;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: #0f1628;
-  color: var(--text);
-  padding: 14px;
-  outline: none;
-}
-
-.field textarea {
-  resize: vertical;
-}
-
-.check-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  color: var(--text);
-}
-
-.important-check {
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.12);
-}
-
-.cart-item {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.cart-item:last-child {
-  border-bottom: none;
-}
-
-.cart-item-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.cart-item-name {
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.cart-item-line {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.qty-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.qty-button {
-  width: 42px;
-  background: #232d47;
-  color: var(--text);
-}
-
-.qty-value {
-  min-width: 18px;
-  text-align: center;
-  font-weight: 800;
-}
-
-.remove-button {
-  background: rgba(255, 125, 125, 0.14);
-  color: var(--danger);
-  padding: 0 12px;
-}
-
-.cart-summary {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-  font-weight: 800;
-}
-
-.contacts-block {
-  margin-top: 16px;
-}
-
-.contacts-label {
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.contact-line {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  padding: 0 14px;
-  border-radius: 14px;
-  background: #232d47;
-}
-
-.social-links {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.social-link {
-  min-height: 42px;
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 14px;
-  background: #232d47;
-}
-
-.footer-nav {
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
-  background: rgba(11, 16, 32, 0.94);
-  backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.footer-link {
-  min-height: 44px;
-  border-radius: 14px;
-  background: #12192c;
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--text);
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-button {
-  cursor: pointer;
-}
-
-.placeholder-card {
-  border-radius: 22px;
-  padding: 18px;
-  color: var(--muted);
-}
-
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 84px;
-  transform: translateX(-50%);
-  max-width: calc(100vw - 32px);
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: #1e2435;
-  color: #fff;
-  box-shadow: var(--shadow);
-  z-index: 9999;
-}
-
-.hidden {
-  display: none !important;
-}
-
-@media (max-width: 720px) {
-  .products-grid {
-    grid-template-columns: 1fr 1fr;
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwl-EtuwHC_UIzo2qKTB9MZNxo7bqynx2zfPWFDFyESXa2W0R84taOAgtyZYG3s07H2xw/exec";
+const DELIVERY_INFO_URL = "https://t.me/cringeator";
+
+const PRODUCTS = [
+  {
+    id: "dicejail",
+    name: "DiceJail",
+    oldPrice: "",
+    price: 1500,
+    description: "Тюрьма для непослушных дайсов из дерева. Все 4 стороны поднимаются вверх.",
+    size: "Размеры: 10×10×11 см",
+    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg"
+  },
+  {
+    id: "dicetray",
+    name: "Дайс трей",
+    oldPrice: "",
+    price: 1500,
+    description: "Лоток для кубиков, удобный аксессуар для настольных игр.",
+    size: "Размеры: 21×21×3 см",
+    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg"
   }
+];
 
-  .tab-button {
-    font-size: 13px;
-    padding: 0 8px;
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+const state = {
+  currentScreen: "catalog",
+  cart: {},
+  search: "",
+  delivery: false
+};
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function showToast(text) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = text;
+  toast.classList.remove("hidden");
+
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3000);
+}
+
+function initTelegram() {
+  try {
+    if (!tg) return;
+
+    tg.ready();
+    tg.expand();
+
+    if (tg.MainButton) {
+      tg.MainButton.hide();
+      tg.MainButton.onClick(() => {
+        if (state.currentScreen === "cart") {
+          submitCartOrder();
+        } else if (state.currentScreen === "custom") {
+          submitCustomOrder();
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Telegram init error:", error);
   }
 }
 
-@media (max-width: 560px) {
-  .products-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+function getTelegramUserData() {
+  try {
+    const user = tg?.initDataUnsafe?.user || null;
 
-  .product-name {
-    font-size: 17px;
-  }
-
-  .product-price {
-    font-size: 18px;
-  }
-
-  .hero-tags {
-    gap: 8px;
-  }
-
-  .hero-tag {
-    font-size: 13px;
+    return {
+      username: user?.username || "",
+      user_id: user?.id || "",
+      full_name: [user?.first_name || "", user?.last_name || ""].join(" ").trim()
+    };
+  } catch (error) {
+    return {
+      username: "",
+      user_id: "",
+      full_name: ""
+    };
   }
 }
 
-@media (min-width: 980px) {
-  .main {
-    padding-top: 18px;
+function getProductById(id) {
+  return PRODUCTS.find(product => product.id === id);
+}
+
+function getFilteredProducts() {
+  const query = state.search.trim().toLowerCase();
+
+  if (!query) return PRODUCTS;
+
+  return PRODUCTS.filter(product => {
+    return [product.name, product.description, product.size]
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
+}
+
+function getCartItems() {
+  return Object.values(state.cart)
+    .map(item => {
+      const product = getProductById(item.productId);
+      if (!product) return null;
+
+      return {
+        ...item,
+        product,
+        lineTotal: product.price * item.qty
+      };
+    })
+    .filter(Boolean);
+}
+
+function getCartCount() {
+  return getCartItems().reduce((sum, item) => sum + item.qty, 0);
+}
+
+function getCartTotal() {
+  return getCartItems().reduce((sum, item) => sum + item.lineTotal, 0);
+}
+
+function setScreen(screenName) {
+  state.currentScreen = screenName;
+
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.toggle("active", screen.id === `screen-${screenName}`);
+  });
+
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.classList.toggle("active", button.dataset.screen === screenName);
+  });
+
+  updateMainButton();
+}
+
+function updateMainButton() {
+  try {
+    if (!tg || !tg.MainButton) return;
+
+    if (state.currentScreen === "cart" && getCartItems().length > 0) {
+      tg.MainButton.setText("Оформить заказ");
+      tg.MainButton.show();
+      return;
+    }
+
+    if (state.currentScreen === "custom") {
+      tg.MainButton.setText("Отправить заявку");
+      tg.MainButton.show();
+      return;
+    }
+
+    tg.MainButton.hide();
+  } catch (error) {
+    console.error("MainButton error:", error);
+  }
+}
+
+function updateCartButton() {
+  const cartButton = document.getElementById("cartButton");
+  const cartBadge = document.getElementById("cartBadge");
+
+  if (!cartButton || !cartBadge) return;
+
+  const count = getCartCount();
+
+  if (count > 0) {
+    cartButton.classList.remove("hidden");
+    cartBadge.textContent = String(count);
+  } else {
+    cartButton.classList.add("hidden");
+    cartBadge.textContent = "0";
   }
 
-  .products-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  updateMainButton();
+}
+
+function addToCart(productId) {
+  const product = getProductById(productId);
+  if (!product) return;
+
+  if (!state.cart[productId]) {
+    state.cart[productId] = {
+      productId,
+      qty: 0
+    };
   }
 
-  .topbar,
-  .tabs,
-  .footer-nav {
-    max-width: 1120px;
-    margin: 0 auto;
-    width: 100%;
+  state.cart[productId].qty += 1;
+
+  renderCart();
+  updateCartButton();
+  showToast(`Товар «${product.name}» добавлен в корзину.`);
+}
+
+function removeFromCart(productId) {
+  delete state.cart[productId];
+
+  renderCart();
+  updateCartButton();
+
+  if (getCartItems().length === 0 && state.currentScreen === "cart") {
+    setScreen("catalog");
   }
+}
+
+function changeQty(productId, delta) {
+  const item = state.cart[productId];
+  if (!item) return;
+
+  item.qty += delta;
+
+  if (item.qty <= 0) {
+    delete state.cart[productId];
+  }
+
+  renderCart();
+  updateCartButton();
+
+  if (getCartItems().length === 0 && state.currentScreen === "cart") {
+    setScreen("catalog");
+  }
+}
+
+function renderProducts() {
+  const grid = document.getElementById("productsGrid");
+  if (!grid) return;
+
+  const list = getFilteredProducts();
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="placeholder-card">Ничего не найдено по вашему запросу.</div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(product => `
+    <article class="product-card">
+      <img
+        class="product-image"
+        src="${escapeHtml(product.image)}"
+        alt="${escapeHtml(product.name)}"
+        loading="lazy"
+      >
+      <div class="product-body">
+        <h3 class="product-name">${escapeHtml(product.name)}</h3>
+        ${product.oldPrice ? `<div class="product-price-old">${escapeHtml(product.oldPrice)}</div>` : ""}
+        <div class="product-price">${product.price} руб.</div>
+        <div class="product-desc">${escapeHtml(product.description)}</div>
+        <div class="product-meta">${escapeHtml(product.size || "")}</div>
+
+        <div class="product-actions">
+          <button class="primary-button" type="button" data-add="${escapeHtml(product.id)}">В корзину</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  grid.querySelectorAll("[data-add]").forEach(button => {
+    button.addEventListener("click", () => {
+      addToCart(button.dataset.add);
+    });
+  });
+}
+
+function renderCart() {
+  const panel = document.getElementById("cartPanel");
+  if (!panel) return;
+
+  const items = getCartItems();
+
+  if (!items.length) {
+    panel.innerHTML = `<div class="placeholder-card">Корзина пока пуста.</div>`;
+    updateMainButton();
+    return;
+  }
+
+  panel.innerHTML = `
+    ${items.map(item => `
+      <div class="cart-item">
+        <div class="cart-item-top">
+          <div>
+            <div class="cart-item-name">${escapeHtml(item.product.name)}</div>
+            <div class="cart-item-line">${item.product.price} ₽ × ${item.qty} = ${item.lineTotal} ₽</div>
+          </div>
+          <button class="remove-button" type="button" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
+        </div>
+
+        <div class="qty-row">
+          <button class="qty-button" type="button" data-minus="${escapeHtml(item.product.id)}">−</button>
+          <div class="qty-value">${item.qty}</div>
+          <button class="qty-button" type="button" data-plus="${escapeHtml(item.product.id)}">+</button>
+        </div>
+      </div>
+    `).join("")}
+
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Итого</span>
+        <span>${getCartTotal()} ₽</span>
+      </div>
+
+      <label class="check-row" style="margin-bottom: 10px;">
+        <input type="checkbox" id="cartDeliveryCheckbox" ${state.delivery ? "checked" : ""}>
+        <span>Нужна доставка</span>
+      </label>
+
+      <a
+        href="${escapeHtml(DELIVERY_INFO_URL)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="contact-line"
+        style="margin-bottom: 14px;"
+      >
+        Информация о доставке
+      </a>
+
+      <button class="primary-button" type="button" id="cartSubmitButton">Оформить весь заказ</button>
+    </div>
+  `;
+
+  panel.querySelectorAll("[data-remove]").forEach(button => {
+    button.addEventListener("click", () => {
+      removeFromCart(button.dataset.remove);
+    });
+  });
+
+  panel.querySelectorAll("[data-minus]").forEach(button => {
+    button.addEventListener("click", () => {
+      changeQty(button.dataset.minus, -1);
+    });
+  });
+
+  panel.querySelectorAll("[data-plus]").forEach(button => {
+    button.addEventListener("click", () => {
+      changeQty(button.dataset.plus, 1);
+    });
+  });
+
+  const deliveryCheckbox = document.getElementById("cartDeliveryCheckbox");
+  if (deliveryCheckbox) {
+    deliveryCheckbox.addEventListener("change", () => {
+      state.delivery = deliveryCheckbox.checked;
+    });
+  }
+
+  const submitButton = document.getElementById("cartSubmitButton");
+  if (submitButton) {
+    submitButton.addEventListener("click", submitCartOrder);
+  }
+
+  updateMainButton();
+}
+
+async function sendToGoogleSheets(payload) {
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    await response.text();
+    return true;
+  } catch (error) {
+    console.error("Google Sheets error:", error);
+    return false;
+  }
+}
+
+async function submitCartOrder() {
+  const items = getCartItems();
+
+  if (!items.length) {
+    showToast("Корзина пуста.");
+    return;
+  }
+
+  const user = getTelegramUserData();
+
+  const payload = {
+    type: "cart_order",
+    created_at: new Date().toLocaleString("ru-RU"),
+    username: user.username,
+    user_id: user.user_id,
+    full_name: user.full_name,
+    products: items.map(item =>
+      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽)`
+    ).join(" | "),
+    total: getCartTotal(),
+    delivery: state.delivery ? "да" : "нет",
+    payment_link: "",
+    comment: "Заказ из корзины",
+    status: "Новая заявка"
+  };
+
+  const ok = await sendToGoogleSheets(payload);
+
+  if (ok) {
+    showToast("Заказ отправлен. Мы скоро свяжемся с вами.");
+    state.cart = {};
+    state.delivery = false;
+    renderCart();
+    updateCartButton();
+    setScreen("catalog");
+  } else {
+    showToast("Не удалось отправить заказ.");
+  }
+}
+
+async function submitCustomOrder() {
+  const title = document.getElementById("customTitle");
+  const description = document.getElementById("customDescription");
+  const size = document.getElementById("customSize");
+  const qty = document.getElementById("customQty");
+  const delivery = document.getElementById("customDelivery");
+  const accept = document.getElementById("customAccept");
+
+  if (!title || !description || !size || !qty || !delivery || !accept) {
+    showToast("Форма не найдена.");
+    return;
+  }
+
+  if (!title.value.trim()) {
+    showToast("Укажите название изделия.");
+    return;
+  }
+
+  if (!description.value.trim()) {
+    showToast("Опишите вашу идею.");
+    return;
+  }
+
+  if (!accept.checked) {
+    showToast("Подтвердите, что стоимость уточняется отдельно.");
+    return;
+  }
+
+  const user = getTelegramUserData();
+
+  const payload = {
+    type: "custom_order",
+    created_at: new Date().toLocaleString("ru-RU"),
+    username: user.username,
+    user_id: user.user_id,
+    full_name: user.full_name,
+    products: `Кастомный заказ: ${title.value.trim()}`,
+    total: "Уточняется",
+    delivery: delivery.checked ? "да" : "нет",
+    payment_link: "",
+    comment:
+      `Описание: ${description.value.trim()} | ` +
+      `Размеры: ${size.value.trim() || "не указаны"} | ` +
+      `Количество: ${qty.value || "1"}`,
+    status: "Новая кастомная заявка"
+  };
+
+  const ok = await sendToGoogleSheets(payload);
+
+  if (ok) {
+    showToast("Заявка отправлена. Мы скоро свяжемся с вами.");
+    title.value = "";
+    description.value = "";
+    size.value = "";
+    qty.value = "1";
+    delivery.checked = false;
+    accept.checked = false;
+    setScreen("catalog");
+  } else {
+    showToast("Не удалось отправить заявку.");
+  }
+}
+
+function bindEvents() {
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.addEventListener("click", () => {
+      setScreen(button.dataset.screen);
+    });
+  });
+
+  const cartButton = document.getElementById("cartButton");
+  if (cartButton) {
+    cartButton.addEventListener("click", () => {
+      setScreen("cart");
+    });
+  }
+
+  const contactsOpenButton = document.getElementById("contactsOpenButton");
+  if (contactsOpenButton) {
+    contactsOpenButton.addEventListener("click", () => {
+      setScreen("contacts");
+    });
+  }
+
+  const customSubmitButton = document.getElementById("customSubmitButton");
+  if (customSubmitButton) {
+    customSubmitButton.addEventListener("click", () => {
+      submitCustomOrder();
+    });
+  }
+
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      state.search = searchInput.value;
+      renderProducts();
+    });
+  }
+}
+
+function init() {
+  try {
+    initTelegram();
+    bindEvents();
+    renderProducts();
+    renderCart();
+    updateCartButton();
+    setScreen("catalog");
+  } catch (error) {
+    console.error("Init error:", error);
+    const grid = document.getElementById("productsGrid");
+    if (grid) {
+      grid.innerHTML = `<div class="placeholder-card">Ошибка загрузки каталога. Проверьте script.js.</div>`;
+    }
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
 }
