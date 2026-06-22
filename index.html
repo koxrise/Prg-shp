@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Paragon Shop</title>
-  <meta name="theme-color" content="#0f1320">
+  <meta name="theme-color" content="#0d1324">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,70 +13,65 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-avatar">P</div>
-        <div class="brand-texts">
+        <div class="brand-text">
           <div class="brand-title">Paragon Shop</div>
-          <div class="brand-subtitle">Магазин изделий из дерева</div>
+          <div class="brand-subtitle">Изделия из дерева</div>
         </div>
       </div>
 
-      <div class="topbar-actions">
-        <button class="icon-button hidden" id="cartButton" type="button" aria-label="Корзина">
-          <span>🛒</span>
-          <span class="cart-badge" id="cartBadge">0</span>
-        </button>
-      </div>
+      <button class="cart-icon hidden" id="cartIcon" type="button" aria-label="Корзина">
+        <span class="cart-emoji">🛒</span>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
     </header>
 
-    <nav class="tabs">
-      <button class="tab-button active" type="button" data-screen="catalog">Каталог</button>
-      <button class="tab-button" type="button" data-screen="cart">Корзина</button>
-      <button class="tab-button" type="button" data-screen="custom">Кастомный заказ</button>
+    <nav class="top-menu">
+      <button class="top-menu-btn active" type="button" data-screen="catalog">Каталог</button>
+      <button class="top-menu-btn" type="button" data-screen="cart">Корзина</button>
+      <button class="top-menu-btn" type="button" data-screen="custom">Кастомный заказ</button>
     </nav>
 
-    <main class="main">
+    <main class="content">
       <section class="screen active" id="screen-catalog">
-        <div class="search-row">
+        <div class="search-wrap">
           <div class="search-box">
-            <span class="search-icon">⌕</span>
+            <span class="search-symbol">⌕</span>
             <input id="searchInput" type="text" placeholder="Я ищу...">
           </div>
         </div>
 
-        <div class="hero-card">
-          <div class="hero-copy">
-            <h1>Каталог изделий</h1>
-            <p>
-              Выберите готовый товар, добавьте его в корзину или оплатите отдельно.
-            </p>
-          </div>
+        <div class="intro-card">
+          <h1>Каталог товаров</h1>
+          <p>
+            Выбирайте готовые товары и добавляйте их в корзину.
+          </p>
         </div>
 
         <div class="products-grid" id="productsGrid">
-          <div class="placeholder-card">Загрузка товаров...</div>
+          <div class="empty-card">Загрузка товаров...</div>
         </div>
       </section>
 
       <section class="screen" id="screen-cart">
-        <div class="section-card">
+        <div class="section-box">
           <h2>Корзина</h2>
-          <p>Изменяйте количество товаров и отправляйте весь заказ одной заявкой.</p>
+          <p>Изменяйте количество товаров и отправляйте заказ одной заявкой.</p>
         </div>
 
-        <div class="cart-panel" id="cartPanel">
-          <div class="placeholder-card">Корзина пока пуста.</div>
+        <div class="cart-box" id="cartBox">
+          <div class="empty-card">Корзина пока пуста.</div>
         </div>
       </section>
 
       <section class="screen" id="screen-custom">
-        <div class="section-card">
-          <h2>Изготовление под заказ Вашей идеи</h2>
+        <div class="section-box">
+          <h2>Кастомный заказ</h2>
           <p>
-            После отправки заявки администратор свяжется с вами в течение 24 часов,
-            уточнит детали и предложит варианты реализации.
+            Опишите свою идею, а администратор свяжется с вами и уточнит детали.
           </p>
         </div>
 
-        <div class="form-panel">
+        <div class="form-box">
           <label class="field">
             <span>Название изделия</span>
             <input id="customTitle" type="text" placeholder="Например: органайзер для кубиков">
@@ -84,12 +79,12 @@
 
           <label class="field">
             <span>Описание идеи</span>
-            <textarea id="customDescription" rows="5" placeholder="Опишите внешний вид, стиль, детали и пожелания"></textarea>
+            <textarea id="customDescription" rows="5" placeholder="Опишите идею, стиль, размер, детали"></textarea>
           </label>
 
           <label class="field">
-            <span>Размеры (можно оставить пустым)</span>
-            <input id="customSize" type="text" placeholder="Например: 25×15×10 см">
+            <span>Размеры (можно пусто)</span>
+            <input id="customSize" type="text" placeholder="Например: 20×15×8 см">
           </label>
 
           <label class="field">
@@ -97,45 +92,57 @@
             <input id="customQty" type="number" min="1" value="1">
           </label>
 
-          <label class="check-row">
+          <label class="check-line">
             <input id="customDelivery" type="checkbox">
-            <span>Нужна доставка</span>
+            <span>Нужна <a href="#" id="openDeliveryFromCustom">доставка</a></span>
           </label>
 
-          <label class="check-row important-check">
+          <label class="check-line important-line">
             <input id="customAccept" type="checkbox">
             <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
           </label>
 
-          <button class="primary-button" id="customSubmitButton" type="button">
-            Отправить заявку
-          </button>
+          <button class="primary-btn" id="customSubmitBtn" type="button">Отправить заявку</button>
         </div>
       </section>
 
       <section class="screen" id="screen-contacts">
-        <div class="contacts-panel">
+        <div class="contacts-box">
           <h2>Контакты</h2>
 
-          <div class="contacts-block">
-            <div class="contacts-label">Контактный телефон</div>
-            <a class="contact-line" href="tel:+79322090663">+7 932 209-06-63</a>
+          <div class="contact-group">
+            <div class="contact-label">Телефон</div>
+            <a class="contact-pill" href="tel:+79322090663">+7 932 209-06-63</a>
           </div>
 
-          <div class="contacts-block">
-            <div class="contacts-label">Наши соц. сети</div>
-            <div class="social-links">
-              <a class="social-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Telegram</a>
-              <a class="social-link" href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
+          <div class="contact-group">
+            <div class="contact-label">Соц. сети</div>
+            <div class="contact-links">
+              <a class="contact-pill" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Telegram</a>
+              <a class="contact-pill" href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-delivery">
+        <div class="contacts-box">
+          <h2>Доставка</h2>
+
+          <div class="contact-group">
+            <div class="contact-label">Информация</div>
+            <div class="empty-card">
+              Доставка обсуждается отдельно после оформления заказа. Администратор свяжется с вами,
+              уточнит адрес, способ отправки и стоимость доставки.
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="footer-nav">
-      <a class="footer-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Написать</a>
-      <button class="footer-link footer-button" id="contactsOpenButton" type="button">Контакты</button>
+    <footer class="bottom-bar">
+      <a class="bottom-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Написать</a>
+      <button class="bottom-link bottom-button" id="contactsBtn" type="button">Контакты</button>
     </footer>
   </div>
 
