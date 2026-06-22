@@ -43,10 +43,8 @@ function escapeHtml(value) {
 function showToast(text) {
   const toast = document.getElementById("toast");
   if (!toast) return;
-
   toast.textContent = text;
   toast.classList.remove("hidden");
-
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
@@ -56,18 +54,14 @@ function showToast(text) {
 function initTelegram() {
   try {
     if (!tg) return;
-
     tg.ready();
     tg.expand();
 
     if (tg.MainButton) {
       tg.MainButton.hide();
       tg.MainButton.onClick(() => {
-        if (state.currentScreen === "cart") {
-          submitCartOrder();
-        } else if (state.currentScreen === "custom") {
-          submitCustomOrder();
-        }
+        if (state.currentScreen === "cart") submitCartOrder();
+        if (state.currentScreen === "custom") submitCustomOrder();
       });
     }
   } catch (error) {
@@ -78,7 +72,6 @@ function initTelegram() {
 function getTelegramUserData() {
   try {
     const user = tg?.initDataUnsafe?.user || null;
-
     return {
       username: user?.username || "",
       user_id: user?.id || "",
@@ -99,7 +92,6 @@ function getProductById(id) {
 
 function getFilteredProducts() {
   const query = state.search.trim().toLowerCase();
-
   if (!query) return PRODUCTS;
 
   return PRODUCTS.filter(product => {
@@ -149,7 +141,7 @@ function setScreen(screenName) {
 
 function updateMainButton() {
   try {
-    if (!tg || !tg.MainButton) return;
+    if (!tg?.MainButton) return;
 
     if (state.currentScreen === "cart" && getCartItems().length > 0) {
       tg.MainButton.setText("Оформить заказ");
@@ -172,11 +164,9 @@ function updateMainButton() {
 function updateCartButton() {
   const cartButton = document.getElementById("cartButton");
   const cartBadge = document.getElementById("cartBadge");
-
   if (!cartButton || !cartBadge) return;
 
   const count = getCartCount();
-
   if (count > 0) {
     cartButton.classList.remove("hidden");
     cartBadge.textContent = String(count);
@@ -193,14 +183,10 @@ function addToCart(productId) {
   if (!product) return;
 
   if (!state.cart[productId]) {
-    state.cart[productId] = {
-      productId,
-      qty: 0
-    };
+    state.cart[productId] = { productId, qty: 0 };
   }
 
   state.cart[productId].qty += 1;
-
   renderCart();
   updateCartButton();
   showToast(`Товар «${product.name}» добавлен в корзину.`);
@@ -208,7 +194,6 @@ function addToCart(productId) {
 
 function removeFromCart(productId) {
   delete state.cart[productId];
-
   renderCart();
   updateCartButton();
 
@@ -222,7 +207,6 @@ function changeQty(productId, delta) {
   if (!item) return;
 
   item.qty += delta;
-
   if (item.qty <= 0) {
     delete state.cart[productId];
   }
@@ -260,7 +244,6 @@ function renderProducts() {
         <div class="product-price">${product.price} руб.</div>
         <div class="product-desc">${escapeHtml(product.description)}</div>
         <div class="product-meta">${escapeHtml(product.size || "")}</div>
-
         <div class="product-actions">
           <button class="primary-button" type="button" data-add="${escapeHtml(product.id)}">В корзину</button>
         </div>
@@ -269,9 +252,7 @@ function renderProducts() {
   `).join("");
 
   grid.querySelectorAll("[data-add]").forEach(button => {
-    button.addEventListener("click", () => {
-      addToCart(button.dataset.add);
-    });
+    button.addEventListener("click", () => addToCart(button.dataset.add));
   });
 }
 
@@ -332,21 +313,15 @@ function renderCart() {
   `;
 
   panel.querySelectorAll("[data-remove]").forEach(button => {
-    button.addEventListener("click", () => {
-      removeFromCart(button.dataset.remove);
-    });
+    button.addEventListener("click", () => removeFromCart(button.dataset.remove));
   });
 
   panel.querySelectorAll("[data-minus]").forEach(button => {
-    button.addEventListener("click", () => {
-      changeQty(button.dataset.minus, -1);
-    });
+    button.addEventListener("click", () => changeQty(button.dataset.minus, -1));
   });
 
   panel.querySelectorAll("[data-plus]").forEach(button => {
-    button.addEventListener("click", () => {
-      changeQty(button.dataset.plus, 1);
-    });
+    button.addEventListener("click", () => changeQty(button.dataset.plus, 1));
   });
 
   const deliveryCheckbox = document.getElementById("cartDeliveryCheckbox");
@@ -368,9 +343,7 @@ async function sendToGoogleSheets(payload) {
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
 
@@ -384,7 +357,6 @@ async function sendToGoogleSheets(payload) {
 
 async function submitCartOrder() {
   const items = getCartItems();
-
   if (!items.length) {
     showToast("Корзина пуста.");
     return;
@@ -398,9 +370,7 @@ async function submitCartOrder() {
     username: user.username,
     user_id: user.user_id,
     full_name: user.full_name,
-    products: items.map(item =>
-      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽)`
-    ).join(" | "),
+    products: items.map(item => `${item.product.name} × ${item.qty} (${item.lineTotal} ₽)`).join(" | "),
     total: getCartTotal(),
     delivery: state.delivery ? "да" : "нет",
     payment_link: "",
@@ -462,10 +432,7 @@ async function submitCustomOrder() {
     total: "Уточняется",
     delivery: delivery.checked ? "да" : "нет",
     payment_link: "",
-    comment:
-      `Описание: ${description.value.trim()} | ` +
-      `Размеры: ${size.value.trim() || "не указаны"} | ` +
-      `Количество: ${qty.value || "1"}`,
+    comment: `Описание: ${description.value.trim()} | Размеры: ${size.value.trim() || "не указаны"} | Количество: ${qty.value || "1"}`,
     status: "Новая кастомная заявка"
   };
 
@@ -487,30 +454,22 @@ async function submitCustomOrder() {
 
 function bindEvents() {
   document.querySelectorAll(".tab-button").forEach(button => {
-    button.addEventListener("click", () => {
-      setScreen(button.dataset.screen);
-    });
+    button.addEventListener("click", () => setScreen(button.dataset.screen));
   });
 
   const cartButton = document.getElementById("cartButton");
   if (cartButton) {
-    cartButton.addEventListener("click", () => {
-      setScreen("cart");
-    });
+    cartButton.addEventListener("click", () => setScreen("cart"));
   }
 
   const contactsOpenButton = document.getElementById("contactsOpenButton");
   if (contactsOpenButton) {
-    contactsOpenButton.addEventListener("click", () => {
-      setScreen("contacts");
-    });
+    contactsOpenButton.addEventListener("click", () => setScreen("contacts"));
   }
 
   const customSubmitButton = document.getElementById("customSubmitButton");
   if (customSubmitButton) {
-    customSubmitButton.addEventListener("click", () => {
-      submitCustomOrder();
-    });
+    customSubmitButton.addEventListener("click", submitCustomOrder);
   }
 
   const searchInput = document.getElementById("searchInput");
