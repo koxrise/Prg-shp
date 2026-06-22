@@ -1,33 +1,73 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Мой магазин</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paragon Shop</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="app">
-    <header class="header">
-      <div>
-        <div class="badge">Telegram Mini App</div>
-        <h1>Мой магазин</h1>
-        <p class="sub">Простой каталог с оплатой через ЮMoney</p>
-      </div>
+    <header class="hero">
+      <div class="hero-badge">Paragon Shop</div>
+      <h1>Изделия ручной работы из дерева</h1>
+      <p class="hero-text">
+        В данном магазине можно приобрести различные изделия из дерева
+        или же заказать изготовление своего собственного.
+      </p>
     </header>
 
-    <section class="note">
+    <section class="info-card">
+      <h2>Как это работает</h2>
       <p>
-        После оплаты администратор подтверждает заказ вручную.
+        После выбора товара вам откроется оплата на Юмани. После этого в течение 24 часов,
+        как крайний срок, обычно это происходит в течение часа в рабочее время, с вами
+        свяжется администратор, задаст необходимые вопросы, уточнит пожелания и подтвердит заказ.
+        Отправка в течение суток, если не было в личном общении установлено обратного
+        (в связи с изготовлением изделия под вас, праздничных дней, выходных или нерабочих дней у пункта отправки).
       </p>
     </section>
 
-    <section>
-      <h2>Товары</h2>
-      <div id="products" class="grid"></div>
+    <section class="info-card">
+      <h2>Подтверждение оплаты</h2>
+      <p>
+        После оформления заказа и оплаты с вами свяжется администратор,
+        согласует все вопросы по заказу, после чего подтвердит его.
+        Ответ может занимать до 24 часов.
+      </p>
+    </section>
+
+    <section class="info-card">
+      <h2>Доставка</h2>
+      <p>
+        Если вам нужна доставка, отметьте это при оформлении. После оплаты администратор
+        свяжется с вами, уточнит адрес, способ отправки и рассчитает стоимость доставки.
+      </p>
+      <p>
+        Доставка осуществляется на выбор: Почта России, СДЭК, Яндекс, Озон, Боксберри.
+        Для жителей и гостей Кирова доступен самовывоз.
+      </p>
+    </section>
+
+    <section class="catalog-section">
+      <div class="section-head">
+        <h2>Каталог</h2>
+        <p>Выберите товар, отметьте доставку при необходимости и оформите заказ.</p>
+      </div>
+      <div id="products" class="products-grid"></div>
+    </section>
+
+    <section class="contacts-card">
+      <h2>Контакты</h2>
+      <div class="contact-links">
+        <a href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Связь с администратором</a>
+        <a href="https://t.me/paragon_create" target="_blank" rel="noopener noreferrer">Telegram-канал / дополнительный контакт</a>
+      </div>
     </section>
   </div>
+
+  <div id="toast" class="toast hidden"></div>
 
   <script src="script.js"></script>
 </body>
