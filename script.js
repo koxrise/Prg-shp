@@ -1,4 +1,4 @@
-fetch("https://script.google.com/macros/s/AKfycbz-ohe-X-XvRIBiAIss3Qzr8Q2tAH_8AhA1mC-fWC3e5lFeaEtZa-Iry61XHrhja5uV5Q/exec", {
+fetch("const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwl-EtuwHC_UIzo2qKTB9MZNxo7bqynx2zfPWFDFyESXa2W0R84taOAgtyZYG3s07H2xw/exec";", {
   method: "POST",
   headers: { "Content-Type": "text/plain;charset=utf-8" },
   body: JSON.stringify({
