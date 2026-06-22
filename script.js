@@ -1,10 +1,5 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzACBWqe_q3xl1VCWpAlqR6Y8RzfY2v1nDuuJr3lmosjYEsAFQh1ZcDZaoXNtosnO1qVQ/exec";
-const CONTACT_TELEGRAM_URL = "https://t.me/cringeator";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbgaDISNV0PSFJ6c_cHo6z-pgL-Vcrk8bY6oUMaVldJdp3HbB5pgXZKBoNRAt3zwvhpg/exec";
 
-/*
-  ЗАМЕНИТЕ ДАННЫЕ ТОВАРОВ ЗДЕСЬ.
-  Если старой цены нет — поставьте oldPrice: "".
-*/
 const PRODUCTS = [
   {
     id: "dicejail",
@@ -13,8 +8,7 @@ const PRODUCTS = [
     price: 1500,
     description: "Тюрьма для непослушных дайсов из дерева. Все 4 стороны поднимаются вверх.",
     size: "Размеры: 10×10×11 см",
-    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg",
-    payment_url: "https://example.com/pay-dicejail"
+    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg"
   },
   {
     id: "dicetray",
@@ -23,8 +17,7 @@ const PRODUCTS = [
     price: 1500,
     description: "Лоток для кубиков, удобный аксессуар для настольных игр.",
     size: "Размеры: 21×21×3 см",
-    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg",
-    payment_url: "https://example.com/pay-dicetray"
+    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg"
   }
 ];
 
@@ -33,7 +26,8 @@ const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : 
 const state = {
   currentScreen: "catalog",
   cart: {},
-  search: ""
+  search: "",
+  orderDelivery: false
 };
 
 function initTelegram() {
@@ -47,8 +41,7 @@ function initTelegram() {
     tg.MainButton.onClick(() => {
       if (state.currentScreen === "cart") {
         submitCartOrder();
-      }
-      if (state.currentScreen === "custom") {
+      } else if (state.currentScreen === "custom") {
         submitCustomOrder();
       }
     });
@@ -94,7 +87,7 @@ function setScreen(screenName) {
     screen.classList.toggle("active", screen.id === `screen-${screenName}`);
   });
 
-  document.querySelectorAll(".tab-button").forEach(button => {
+  document.querySelectorAll(".top-menu-btn").forEach(button => {
     button.classList.toggle("active", button.dataset.screen === screenName);
   });
 
@@ -104,7 +97,7 @@ function setScreen(screenName) {
 function updateMainButton() {
   if (!tg?.MainButton) return;
 
-  if (state.currentScreen === "cart" && getCartItems().length) {
+  if (state.currentScreen === "cart" && getCartItems().length > 0) {
     tg.MainButton.setText("Оформить заказ");
     tg.MainButton.show();
     return;
@@ -129,11 +122,8 @@ function getFilteredProducts() {
   if (!query) return PRODUCTS;
 
   return PRODUCTS.filter(product => {
-    return [
-      product.name,
-      product.description,
-      product.size
-    ].join(" ").toLowerCase().includes(query);
+    const text = [product.name, product.description, product.size].join(" ").toLowerCase();
+    return text.includes(query);
   });
 }
 
@@ -144,22 +134,20 @@ function addToCart(productId) {
   if (!state.cart[productId]) {
     state.cart[productId] = {
       productId,
-      qty: 0,
-      delivery: false
+      qty: 0
     };
   }
 
   state.cart[productId].qty += 1;
-
   renderCart();
-  updateCartButton();
+  updateCartIcon();
   showToast(`Товар «${product.name}» добавлен в корзину.`);
 }
 
 function removeFromCart(productId) {
   delete state.cart[productId];
   renderCart();
-  updateCartButton();
+  updateCartIcon();
 }
 
 function changeQty(productId, delta) {
@@ -173,12 +161,7 @@ function changeQty(productId, delta) {
   }
 
   renderCart();
-  updateCartButton();
-}
-
-function setDelivery(productId, checked) {
-  if (!state.cart[productId]) return;
-  state.cart[productId].delivery = checked;
+  updateCartIcon();
 }
 
 function getCartItems() {
@@ -204,19 +187,19 @@ function getCartTotal() {
   return getCartItems().reduce((sum, item) => sum + item.lineTotal, 0);
 }
 
-function updateCartButton() {
-  const cartButton = document.getElementById("cartButton");
-  const cartBadge = document.getElementById("cartBadge");
+function updateCartIcon() {
+  const cartIcon = document.getElementById("cartIcon");
+  const cartCount = document.getElementById("cartCount");
   const count = getCartCount();
 
-  if (!cartButton || !cartBadge) return;
+  if (!cartIcon || !cartCount) return;
 
   if (count > 0) {
-    cartButton.classList.remove("hidden");
-    cartBadge.textContent = String(count);
+    cartIcon.classList.remove("hidden");
+    cartCount.textContent = String(count);
   } else {
-    cartButton.classList.add("hidden");
-    cartBadge.textContent = "0";
+    cartIcon.classList.add("hidden");
+    cartCount.textContent = "0";
   }
 
   updateMainButton();
@@ -226,14 +209,14 @@ function renderProducts() {
   const grid = document.getElementById("productsGrid");
   if (!grid) return;
 
-  const list = getFilteredProducts();
+  const filtered = getFilteredProducts();
 
-  if (!list.length) {
-    grid.innerHTML = `<div class="placeholder-card">Ничего не найдено по вашему запросу.</div>`;
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-card">Ничего не найдено.</div>`;
     return;
   }
 
-  grid.innerHTML = list.map(product => `
+  grid.innerHTML = filtered.map(product => `
     <article class="product-card">
       <img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
       <div class="product-body">
@@ -244,8 +227,7 @@ function renderProducts() {
         <div class="product-meta">${escapeHtml(product.size || "")}</div>
 
         <div class="product-actions">
-          <button class="primary-button" type="button" data-add="${escapeHtml(product.id)}">В корзину</button>
-          <a class="secondary-button" href="${escapeHtml(product.payment_url)}" target="_blank" rel="noopener noreferrer">Оплатить отдельно</a>
+          <button class="primary-btn" type="button" data-add="${escapeHtml(product.id)}">В корзину</button>
         </div>
       </div>
     </article>
@@ -257,69 +239,81 @@ function renderProducts() {
 }
 
 function renderCart() {
-  const panel = document.getElementById("cartPanel");
-  if (!panel) return;
+  const box = document.getElementById("cartBox");
+  if (!box) return;
 
   const items = getCartItems();
 
   if (!items.length) {
-    panel.innerHTML = `<div class="placeholder-card">Корзина пока пуста.</div>`;
+    box.innerHTML = `<div class="empty-card">Корзина пока пуста.</div>`;
     updateMainButton();
     return;
   }
 
-  panel.innerHTML = `
+  box.innerHTML = `
     ${items.map(item => `
       <div class="cart-item">
-        <div class="cart-item-top">
+        <div class="cart-row">
           <div>
-            <div class="cart-item-name">${escapeHtml(item.product.name)}</div>
-            <div class="cart-item-line">${item.product.price} ₽ × ${item.qty} = ${item.lineTotal} ₽</div>
+            <div class="cart-name">${escapeHtml(item.product.name)}</div>
+            <div class="cart-line">${item.product.price} ₽ × ${item.qty} = ${item.lineTotal} ₽</div>
           </div>
-          <button class="remove-button" type="button" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
+          <button class="remove-btn" type="button" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
         </div>
 
-        <label class="check-row">
-          <input type="checkbox" data-delivery="${escapeHtml(item.product.id)}" ${item.delivery ? "checked" : ""}>
-          <span>Нужна доставка для этой позиции</span>
-        </label>
-
         <div class="qty-row">
-          <button class="qty-button" type="button" data-minus="${escapeHtml(item.product.id)}">−</button>
+          <button class="qty-btn" type="button" data-minus="${escapeHtml(item.product.id)}">−</button>
           <div class="qty-value">${item.qty}</div>
-          <button class="qty-button" type="button" data-plus="${escapeHtml(item.product.id)}">+</button>
+          <button class="qty-btn" type="button" data-plus="${escapeHtml(item.product.id)}">+</button>
         </div>
       </div>
     `).join("")}
 
     <div class="cart-summary">
-      <div class="summary-row">
+      <label class="check-line">
+        <input type="checkbox" id="orderDeliveryCheckbox" ${state.orderDelivery ? "checked" : ""}>
+        <span>Нужна <a href="#" id="openDeliveryFromCart">доставка</a></span>
+      </label>
+
+      <div class="summary-line">
         <span>Итого</span>
         <span>${getCartTotal()} ₽</span>
       </div>
-      <button class="primary-button" type="button" id="cartSubmitButton">Оформить весь заказ</button>
+
+      <button class="primary-btn" type="button" id="cartSubmitBtn">Оформить весь заказ</button>
     </div>
   `;
 
-  panel.querySelectorAll("[data-remove]").forEach(button => {
+  box.querySelectorAll("[data-remove]").forEach(button => {
     button.addEventListener("click", () => removeFromCart(button.dataset.remove));
   });
 
-  panel.querySelectorAll("[data-minus]").forEach(button => {
+  box.querySelectorAll("[data-minus]").forEach(button => {
     button.addEventListener("click", () => changeQty(button.dataset.minus, -1));
   });
 
-  panel.querySelectorAll("[data-plus]").forEach(button => {
+  box.querySelectorAll("[data-plus]").forEach(button => {
     button.addEventListener("click", () => changeQty(button.dataset.plus, 1));
   });
 
-  panel.querySelectorAll("[data-delivery]").forEach(checkbox => {
-    checkbox.addEventListener("change", () => setDelivery(checkbox.dataset.delivery, checkbox.checked));
-  });
+  const orderDeliveryCheckbox = document.getElementById("orderDeliveryCheckbox");
+  if (orderDeliveryCheckbox) {
+    orderDeliveryCheckbox.addEventListener("change", () => {
+      state.orderDelivery = orderDeliveryCheckbox.checked;
+    });
+  }
 
-  const submitButton = document.getElementById("cartSubmitButton");
-  if (submitButton) {
-    submitButton.addEventListener("click", submitCartOrder);
+  const openDeliveryFromCart = document.getElementById("openDeliveryFromCart");
+  if (openDeliveryFromCart) {
+    openDeliveryFromCart.addEventListener("click", (e) => {
+      e.preventDefault();
+      setScreen("delivery");
+    });
+  }
+
+  const cartSubmitBtn = document.getElementById("cartSubmitBtn");
+  if (cartSubmitBtn) {
+    cartSubmitBtn.addEventListener("click", submitCartOrder);
   }
 
   updateMainButton();
@@ -327,23 +321,25 @@ function renderCart() {
 
 async function sendToGoogleSheets(payload) {
   try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
+    await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(payload)
     });
 
-    return response.ok;
+    return true;
   } catch (error) {
-    console.error("Google Sheets error:", error);
+    console.error("sendToGoogleSheets error:", error);
     return false;
   }
 }
 
 async function submitCartOrder() {
   const items = getCartItems();
+
   if (!items.length) {
     showToast("Корзина пуста.");
     return;
@@ -358,11 +354,11 @@ async function submitCartOrder() {
     user_id: user.user_id,
     full_name: user.full_name,
     products: items.map(item =>
-      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽, доставка: ${item.delivery ? "да" : "нет"})`
+      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽)`
     ).join(" | "),
     total: getCartTotal(),
-    delivery: items.some(item => item.delivery) ? "да" : "нет",
-    payment_link: items.map(item => `${item.product.name}: ${item.product.payment_url}`).join(" | "),
+    delivery: state.orderDelivery ? "да" : "нет",
+    payment_link: "",
     comment: "Заказ из корзины",
     status: "Новая заявка"
   };
@@ -372,11 +368,12 @@ async function submitCartOrder() {
   if (ok) {
     showToast("Заказ отправлен. Администратор свяжется с вами.");
     state.cart = {};
+    state.orderDelivery = false;
     renderCart();
-    updateCartButton();
+    updateCartIcon();
     setScreen("catalog");
   } else {
-    showToast("Не удалось отправить заказ. Нажмите «Написать».");
+    showToast("Не удалось создать заказ. Нажмите «Написать».");
   }
 }
 
@@ -394,12 +391,12 @@ async function submitCustomOrder() {
   }
 
   if (!description.value.trim()) {
-    showToast("Опишите вашу идею.");
+    showToast("Опишите идею.");
     return;
   }
 
   if (!accept.checked) {
-    showToast("Подтвердите, что стоимость уточняется отдельно.");
+    showToast("Поставьте галочку про стоимость.");
     return;
   }
 
@@ -425,7 +422,7 @@ async function submitCustomOrder() {
   const ok = await sendToGoogleSheets(payload);
 
   if (ok) {
-    showToast("Заявка отправлена. Администратор свяжется с вами в течение 24 часов.");
+    showToast("Заявка отправлена. Администратор свяжется с вами.");
     title.value = "";
     description.value = "";
     size.value = "";
@@ -434,30 +431,30 @@ async function submitCustomOrder() {
     accept.checked = false;
     setScreen("catalog");
   } else {
-    showToast("Не удалось отправить заявку. Нажмите «Написать».");
+    showToast("Не удалось создать заявку. Нажмите «Написать».");
   }
 }
 
 function bindEvents() {
-  document.querySelectorAll(".tab-button").forEach(button => {
+  document.querySelectorAll(".top-menu-btn").forEach(button => {
     button.addEventListener("click", () => {
       setScreen(button.dataset.screen);
     });
   });
 
-  const cartButton = document.getElementById("cartButton");
-  if (cartButton) {
-    cartButton.addEventListener("click", () => setScreen("cart"));
+  const cartIcon = document.getElementById("cartIcon");
+  if (cartIcon) {
+    cartIcon.addEventListener("click", () => setScreen("cart"));
   }
 
-  const contactsOpenButton = document.getElementById("contactsOpenButton");
-  if (contactsOpenButton) {
-    contactsOpenButton.addEventListener("click", () => setScreen("contacts"));
+  const contactsBtn = document.getElementById("contactsBtn");
+  if (contactsBtn) {
+    contactsBtn.addEventListener("click", () => setScreen("contacts"));
   }
 
-  const customSubmitButton = document.getElementById("customSubmitButton");
-  if (customSubmitButton) {
-    customSubmitButton.addEventListener("click", submitCustomOrder);
+  const customSubmitBtn = document.getElementById("customSubmitBtn");
+  if (customSubmitBtn) {
+    customSubmitBtn.addEventListener("click", submitCustomOrder);
   }
 
   const searchInput = document.getElementById("searchInput");
@@ -467,6 +464,14 @@ function bindEvents() {
       renderProducts();
     });
   }
+
+  const openDeliveryFromCustom = document.getElementById("openDeliveryFromCustom");
+  if (openDeliveryFromCustom) {
+    openDeliveryFromCustom.addEventListener("click", (e) => {
+      e.preventDefault();
+      setScreen("delivery");
+    });
+  }
 }
 
 function init() {
@@ -474,7 +479,7 @@ function init() {
   bindEvents();
   renderProducts();
   renderCart();
-  updateCartButton();
+  updateCartIcon();
   setScreen("catalog");
 }
 
