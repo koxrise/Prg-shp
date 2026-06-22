@@ -2,123 +2,155 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+  >
   <title>Paragon Shop</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#ffffff">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <header class="hero">
-      <div class="hero-badge">Paragon Shop</div>
-      <h1>Изделия ручной работы из дерева</h1>
-      <p class="hero-text">
-        В данном магазине можно приобрести различные изделия из дерева
-        или же заказать изготовление своего собственного.
-      </p>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="icon-btn hidden" id="backBtnInside" type="button" aria-label="Назад">
+        ←
+      </button>
+
+      <div class="brand-block">
+        <div class="brand-badge">Paragon Shop</div>
+        <div class="brand-subtitle">Изделия из дерева</div>
+      </div>
+
+      <button class="cart-fab hidden" id="cartFab" type="button" aria-label="Корзина">
+        <span class="cart-fab-icon">🛒</span>
+        <span class="cart-fab-count" id="cartFabCount">0</span>
+      </button>
     </header>
 
-    <section class="info-card">
-      <h2>Как это работает</h2>
-      <p>
-        После выбора товара, вам откроется оплата на Юмани. После этого в течение 24 часов,
-        как крайний срок, обычно это происходит в течение часа в рабочее время, с вами свяжется
-        администратор, задаст необходимые вопросы, уточнит пожелания и подтвердит заказ.
-      </p>
-      <p>
-        Отправка в течение суток, если не было в личном общении установлено обратного
-        (в связи с изготовлением изделия под Вас, праздничных дней, выходных или нерабочих дней у пункта отправки).
-      </p>
-    </section>
+    <main class="screen-wrap">
+      <!-- Главная -->
+      <section class="screen active" id="screen-home">
+        <div class="hero-card">
+          <div class="hero-badge">Mini App</div>
+          <h1>Удобный магазин внутри Telegram</h1>
+          <p class="hero-text">
+            Выберите готовый товар из каталога или отправьте заявку на изготовление под заказ.
+          </p>
+        </div>
 
-    <section class="info-card">
-      <h2>Доставка</h2>
-      <p>
-        Если вам нужна доставка, отметьте это при оформлении. После оплаты администратор свяжется с вами,
-        уточнит адрес, способ отправки и рассчитает стоимость доставки.
-      </p>
-      <p>
-        Доставка осуществляется на выбор — Почтой России, СДЭК, Яндекс, Озон, Боксберри.
-        Для жителей и гостей Кирова доступен самовывоз.
-      </p>
-    </section>
+        <div class="menu-grid">
+          <button class="menu-card" type="button" data-nav="catalog">
+            <div class="menu-card-icon">🪵</div>
+            <div class="menu-card-title">Каталог</div>
+            <div class="menu-card-text">
+              Готовые товары с добавлением в корзину и отдельной оплатой.
+            </div>
+          </button>
 
-    <section class="catalog-section">
-      <div class="section-head">
-        <h2>Каталог</h2>
-        <p>Выберите товар, добавьте его в корзину или оплатите отдельно.</p>
-      </div>
-      <div id="products" class="products-grid">
-        <div class="loading-box">Загрузка каталога...</div>
-      </div>
-    </section>
+          <button class="menu-card" type="button" data-nav="custom">
+            <div class="menu-card-icon">✨</div>
+            <div class="menu-card-title">Изготовление под заказ Вашей идеи</div>
+            <div class="menu-card-text">
+              Опишите задумку, а администратор свяжется с вами в течение 24 часов.
+            </div>
+          </button>
+        </div>
 
-    <section class="cart-section">
-      <div class="section-head">
-        <h2>Корзина</h2>
-        <p>Здесь можно изменить количество товаров и отправить весь заказ одной заявкой.</p>
-      </div>
-      <div id="cartBox" class="cart-box">
-        <div class="empty-box">Корзина пока пуста.</div>
-      </div>
-    </section>
+        <div class="info-card">
+          <h2>Как это работает</h2>
+          <p>
+            После оформления заявки администратор свяжется с вами, уточнит детали, пожелания,
+            доставку и подскажет дальнейшие шаги.
+          </p>
+        </div>
+      </section>
 
-    <section class="custom-section">
-      <div class="section-head">
-        <h2>Изготовление под заказ Вашей идеи</h2>
-        <p>
-          Опишите, что вы хотите изготовить. После этого администратор свяжется с вами
-          в течение 24 часов, уточнит все вопросы и предложит варианты реализации идеи.
-        </p>
-      </div>
+      <!-- Каталог -->
+      <section class="screen" id="screen-catalog">
+        <div class="section-head">
+          <h2>Каталог</h2>
+          <p>Добавляйте товары в корзину или оплачивайте каждый товар отдельно.</p>
+        </div>
+        <div id="productsGrid" class="products-grid">
+          <div class="empty-state-box">Загрузка каталога...</div>
+        </div>
+      </section>
 
-      <div class="custom-form">
-        <label>
-          <span>Название изделия</span>
-          <input id="custom_title" type="text" placeholder="Например: башня для кубиков в стиле фэнтези">
-        </label>
+      <!-- Кастом -->
+      <section class="screen" id="screen-custom">
+        <div class="section-head">
+          <h2>Изготовление под заказ Вашей идеи</h2>
+          <p>
+            После отправки заявки администратор свяжется с вами в течение 24 часов,
+            уточнит вопросы и предложит варианты реализации идеи.
+          </p>
+        </div>
 
-        <label>
-          <span>Описание идеи</span>
-          <textarea id="custom_description" rows="5" placeholder="Опишите внешний вид, стиль, пожелания, детали"></textarea>
-        </label>
+        <div class="panel">
+          <div class="form-grid">
+            <label class="field">
+              <span class="field-label">Название изделия</span>
+              <input id="customTitle" type="text" placeholder="Например: башня для кубиков">
+            </label>
 
-        <label>
-          <span>Размеры (необязательно)</span>
-          <input id="custom_size" type="text" placeholder="Например: 20×20×10 см">
-        </label>
+            <label class="field">
+              <span class="field-label">Описание идеи</span>
+              <textarea id="customDescription" rows="5" placeholder="Опишите идею, стиль, детали, пожелания"></textarea>
+            </label>
 
-        <label>
-          <span>Количество</span>
-          <input id="custom_qty" type="number" min="1" value="1">
-        </label>
+            <label class="field">
+              <span class="field-label">Размеры (можно оставить пустым)</span>
+              <input id="customSize" type="text" placeholder="Например: 20×20×10 см">
+            </label>
 
-        <label class="checkbox-line">
-          <input id="custom_delivery" type="checkbox">
-          <span>Нужна доставка</span>
-        </label>
+            <label class="field">
+              <span class="field-label">Количество</span>
+              <input id="customQty" type="number" min="1" value="1">
+            </label>
 
-        <label class="checkbox-line checkbox-important">
-          <input id="custom_accept" type="checkbox">
-          <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
-        </label>
+            <label class="checkbox-row">
+              <input id="customDelivery" type="checkbox">
+              <span>Нужна доставка</span>
+            </label>
 
-        <button class="btn btn-primary" id="customSubmitBtn" type="button">
-          Отправить заявку на кастомный заказ
-        </button>
-      </div>
-    </section>
+            <label class="checkbox-row checkbox-important">
+              <input id="customAccept" type="checkbox">
+              <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
+            </label>
 
-    <section class="contacts-card">
-      <h2>Контакты</h2>
-      <div class="contact-links">
-        <a href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Написать администратору</a>
-        <a href="https://t.me/paragon_create" target="_blank" rel="noopener noreferrer">Дополнительный контакт</a>
-      </div>
-    </section>
+            <button class="primary-btn" id="customSubmitBtn" type="button">
+              Отправить заявку
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Корзина -->
+      <section class="screen" id="screen-cart">
+        <div class="section-head">
+          <h2>Корзина</h2>
+          <p>Здесь можно изменить количество товаров и отправить весь заказ одной заявкой.</p>
+        </div>
+
+        <div class="panel" id="cartPanel">
+          <div class="empty-state-box">Корзина пока пуста.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="sticky-footer">
+      <a href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer" class="footer-link">
+        Написать администратору
+      </a>
+      <a href="https://t.me/paragon_create" target="_blank" rel="noopener noreferrer" class="footer-link">
+        Контакты
+      </a>
+    </footer>
   </div>
 
-  <div id="toast" class="toast hidden"></div>
+  <div class="toast hidden" id="toast"></div>
 
   <script src="script.js"></script>
 </body>
