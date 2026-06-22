@@ -1,153 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paragon Shop</title>
-  <meta name="theme-color" content="#0d1324">
+
+  <meta http-equiv="cache-control" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta http-equiv="pragma" content="no-cache" />
+
+  <link rel="stylesheet" href="styles.css?v=6" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-  <img class="brand-logo" src="https://i.ibb.co/dsjr3mbz/image.jpg" alt="Paragon Shop">
-  <div class="brand-text">
-    <div class="brand-title">Paragon Shop</div>
-    <div class="brand-subtitle">Изделия из дерева</div>
-  </div>
-</div>
+  <header class="topbar">
+    <div class="brand">PARAGON</div>
 
-      <button class="cart-icon hidden" id="cartIcon" type="button" aria-label="Корзина">
-        <span class="cart-emoji">🛒</span>
-        <span class="cart-count" id="cartCount">0</span>
+    <nav class="topmenu">
+      <button class="menu-btn active" data-page="catalog">Каталог</button>
+      <button class="menu-btn cart-hidden" data-page="cart" id="cartMenuBtn">
+        Корзина <span id="cartCount">0</span>
       </button>
-    </header>
-
-    <nav class="top-menu">
-      <button class="top-menu-btn active" type="button" data-screen="catalog">Каталог</button>
-      <button class="top-menu-btn" type="button" data-screen="cart">Корзина</button>
-      <button class="top-menu-btn" type="button" data-screen="custom">Кастомный заказ</button>
+      <button class="menu-btn" data-page="custom">Свой заказ</button>
     </nav>
+  </header>
 
-    <main class="content">
-      <section class="screen active" id="screen-catalog">
-        <div class="search-wrap">
-          <div class="search-box">
-            <span class="search-symbol">⌕</span>
-            <input id="searchInput" type="text" placeholder="Я ищу...">
-          </div>
-        </div>
+  <main class="container">
+    <section class="page active" id="page-catalog">
+      <div class="hero">
+        <h1>Изделия из дерева и кастомные заказы</h1>
+        <p>
+          Ручная работа, сувениры, DnD-аксессуары, брелоки, сундуки и другие изделия.
+          Можно выбрать готовый товар или оставить свой заказ.
+        </p>
+      </div>
 
-        <div class="intro-card">
-          <h1>Каталог товаров</h1>
-          <p>
-            Выбирайте готовые товары и добавляйте их в корзину.
-          </p>
-        </div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Поиск по товарам..." />
+      </div>
 
-        <div class="products-grid" id="productsGrid">
-          <div class="empty-card">Загрузка товаров...</div>
-        </div>
-      </section>
+      <div class="products" id="productsList"></div>
+    </section>
 
-      <section class="screen" id="screen-cart">
-        <div class="section-box">
-          <h2>Корзина</h2>
-          <p>Изменяйте количество товаров и отправляйте заказ одной заявкой.</p>
-        </div>
+    <section class="page" id="page-cart">
+      <div class="section-head">
+        <h2>Корзина</h2>
+        <p>Проверь товары перед отправкой заявки.</p>
+      </div>
 
-        <div class="cart-box" id="cartBox">
-          <div class="empty-card">Корзина пока пуста.</div>
-        </div>
-      </section>
+      <div id="cartEmpty" class="empty-box">
+        Корзина пока пустая.
+      </div>
 
-      <section class="screen" id="screen-custom">
-        <div class="section-box">
-          <h2>Кастомный заказ</h2>
-          <p>
-            Опишите свою идею, а администратор свяжется с вами и уточнит детали.
-          </p>
-        </div>
+      <div id="cartContent" class="hidden">
+        <div id="cartItems" class="cart-items"></div>
 
-        <div class="form-box">
-          <label class="field">
-            <span>Название изделия</span>
-            <input id="customTitle" type="text" placeholder="Например: органайзер для кубиков">
-          </label>
-
-          <label class="field">
-            <span>Описание идеи</span>
-            <textarea id="customDescription" rows="5" placeholder="Опишите идею, стиль, размер, детали"></textarea>
-          </label>
-
-          <label class="field">
-            <span>Размеры (можно пусто)</span>
-            <input id="customSize" type="text" placeholder="Например: 20×15×8 см">
-          </label>
-
-          <label class="field">
-            <span>Количество</span>
-            <input id="customQty" type="number" min="1" value="1">
-          </label>
-
-          <label class="check-line">
-            <input id="customDelivery" type="checkbox">
-            <span>Нужна <a href="#" id="openDeliveryFromCustom">доставка</a></span>
-          </label>
-
-          <label class="check-line important-line">
-            <input id="customAccept" type="checkbox">
-            <span>Я понимаю, что стоимость кастомного заказа уточняется отдельно</span>
-          </label>
-
-          <button class="primary-btn" id="customSubmitBtn" type="button">Отправить заявку</button>
-        </div>
-      </section>
-
-      <section class="screen" id="screen-contacts">
-        <div class="contacts-box">
-          <h2>Контакты</h2>
-
-          <div class="contact-group">
-            <div class="contact-label">Телефон</div>
-            <a class="contact-pill" href="tel:+79322090663">+7 932 209-06-63</a>
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span>Итого:</span>
+            <strong id="cartTotal">0 ₽</strong>
           </div>
 
-          <div class="contact-group">
-            <div class="contact-label">Соц. сети</div>
-            <div class="contact-links">
-              <a class="contact-pill" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Telegram</a>
-              <a class="contact-pill" href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer">VK</a>
-            </div>
-          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="deliveryCheckbox" />
+            <span>Нужна доставка</span>
+          </label>
+
+          <button class="primary-btn" id="submitCartOrderBtn">Оформить заказ</button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="screen" id="screen-delivery">
-        <div class="contacts-box">
-          <h2>Доставка</h2>
+    <section class="page" id="page-custom">
+      <div class="section-head">
+        <h2>Свой заказ</h2>
+        <p>Опиши, что ты хочешь изготовить.</p>
+      </div>
 
-          <div class="contact-group">
-            <div class="contact-label">Информация</div>
-            <div class="empty-card">
-              Доставка обсуждается отдельно после оформления заказа. Администратор свяжется с вами,
-              уточнит адрес, способ отправки и стоимость доставки.
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+      <div class="custom-form">
+        <label>
+          <span>Что нужно сделать</span>
+          <textarea id="customText" rows="6" placeholder="Например: кастомный дайс-трей, шкатулка, брелок, магнит, набор подарков..."></textarea>
+        </label>
 
-    <footer class="bottom-bar">
-      <a class="bottom-link" href="https://t.me/cringeator" target="_blank" rel="noopener noreferrer">Написать</a>
-      <button class="bottom-link bottom-button" id="contactsBtn" type="button">Контакты</button>
-    </footer>
-  </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="customDeliveryCheckbox" />
+          <span>Нужна доставка</span>
+        </label>
 
-  <div class="toast hidden" id="toast"></div>
+        <button class="primary-btn" id="submitCustomOrderBtn">Отправить заявку</button>
+      </div>
+    </section>
+  </main>
 
-  <script src="script.js"></script>
+  <footer class="footer">
+    <div class="contacts-block">
+      <a href="https://t.me/Paragon_shopbot" target="_blank" rel="noopener noreferrer" class="small-btn">Написать</a>
+      <a href="https://vk.com/paragon_design" target="_blank" rel="noopener noreferrer" class="small-btn">VK</a>
+      <a href="tel:+79322090663" class="small-btn">+7 932 209-06-63</a>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js?v=6"></script>
 </body>
 </html>
