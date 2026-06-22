@@ -12,13 +12,13 @@ const PRODUCTS = [
     id: 1,
     name: "Дайс-трей из дерева",
     price: 1900,
-    description: "Ручная работа, удобен для настольных игр и хранения кубиков."
+    description: "Ручная работа, удобен для настольных игр, хранения кубиков и красивой подачи игрового набора."
   },
   {
     id: 2,
     name: "Деревянный сундук",
     price: 3500,
-    description: "Сувенирный сундук для хранения мелочей, подарков и аксессуаров."
+    description: "Сувенирный сундук для хранения мелочей, подарков, аксессуаров и атмосферных тематических наборов."
   }
 ];
 
@@ -31,22 +31,13 @@ function showToast(text) {
   const toast = document.getElementById("toast");
   toast.textContent = text;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
 }
 
-function switchPage(page) {
-  state.currentPage = page;
-
-  document.querySelectorAll(".page").forEach((pageEl) => {
-    pageEl.classList.remove("active");
-  });
-
-  document.querySelectorAll(".menu-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-
-  document.getElementById(`page-${page}`).classList.add("active");
-  document.querySelector(`.menu-btn[data-page="${page}"]`).classList.add("active");
+function formatPrice(value) {
+  return `${Number(value).toLocaleString("ru-RU")} ₽`;
 }
 
 function getUserData() {
@@ -67,70 +58,94 @@ function getUserData() {
   };
 }
 
-function formatPrice(value) {
-  return `${value.toLocaleString("ru-RU")} ₽`;
+function switchPage(page) {
+  state.currentPage = page;
+
+  document.querySelectorAll(".page").forEach((el) => {
+    el.classList.remove("active");
+  });
+
+  document.querySelectorAll(".top-tab").forEach((el) => {
+    el.classList.remove("active");
+  });
+
+  document.querySelectorAll(".bottom-nav-btn").forEach((el) => {
+    el.classList.remove("active");
+  });
+
+  const pageElement = document.getElementById(`page-${page}`);
+  if (pageElement) pageElement.classList.add("active");
+
+  document.querySelectorAll(`[data-page="${page}"]`).forEach((el) => {
+    el.classList.add("active");
+  });
 }
 
 function renderProducts(filter = "") {
-  const wrap = document.getElementById("productsList");
-  wrap.innerHTML = "";
+  const list = document.getElementById("productsList");
+  list.innerHTML = "";
 
-  const normalized = filter.trim().toLowerCase();
+  const query = filter.trim().toLowerCase();
 
   const filtered = PRODUCTS.filter((item) => {
     return (
-      item.name.toLowerCase().includes(normalized) ||
-      item.description.toLowerCase().includes(normalized)
+      item.name.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query)
     );
   });
 
   if (!filtered.length) {
-    wrap.innerHTML = `<div class="empty-box">Ничего не найдено.</div>`;
+    list.innerHTML = `
+      <section class="section-card">
+        <div class="empty-state">
+          <div class="empty-title">Ничего не найдено</div>
+          <div class="empty-text">Попробуй изменить запрос поиска.</div>
+        </div>
+      </section>
+    `;
     return;
   }
 
-  filtered.forEach((product) => {
-    const card = document.createElement("div");
+  filtered.forEach((item) => {
+    const card = document.createElement("article");
     card.className = "product-card";
     card.innerHTML = `
-      <h3 class="product-title">${product.name}</h3>
-      <div class="product-desc">${product.description}</div>
-      <div class="product-price">${formatPrice(product.price)}</div>
-      <button class="primary-btn" data-add-id="${product.id}">В корзину</button>
+      <div class="product-top">
+        <h3 class="product-title">${item.name}</h3>
+        <div class="product-price">${formatPrice(item.price)}</div>
+      </div>
+      <div class="product-desc">${item.description}</div>
+      <div class="card-actions">
+        <button class="main-btn" data-add-id="${item.id}">В корзину</button>
+      </div>
     `;
-    wrap.appendChild(card);
+    list.appendChild(card);
   });
 
   document.querySelectorAll("[data-add-id]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const id = Number(btn.dataset.addId);
-      addToCart(id);
+      addToCart(Number(btn.dataset.addId));
     });
   });
 }
 
 function addToCart(productId) {
-  const product = PRODUCTS.find((item) => item.id === productId);
-  if (!product) return;
+  const found = PRODUCTS.find((item) => item.id === productId);
+  if (!found) return;
 
-  const existing = state.cart.find((item) => item.id === productId);
+  const inCart = state.cart.find((item) => item.id === productId);
 
-  if (existing) {
-    existing.quantity += 1;
+  if (inCart) {
+    inCart.quantity += 1;
   } else {
     state.cart.push({
-      ...product,
+      ...found,
       quantity: 1
     });
   }
 
   updateCartUI();
   showToast("Товар добавлен в корзину");
-}
-
-function removeFromCart(productId) {
-  state.cart = state.cart.filter((item) => item.id !== productId);
-  updateCartUI();
 }
 
 function changeQuantity(productId, delta) {
@@ -140,10 +155,14 @@ function changeQuantity(productId, delta) {
   item.quantity += delta;
 
   if (item.quantity <= 0) {
-    removeFromCart(productId);
-    return;
+    state.cart = state.cart.filter((x) => x.id !== productId);
   }
 
+  updateCartUI();
+}
+
+function removeFromCart(productId) {
+  state.cart = state.cart.filter((item) => item.id !== productId);
   updateCartUI();
 }
 
@@ -152,28 +171,36 @@ function getCartCount() {
 }
 
 function getCartTotal() {
-  return state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return state.cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
 }
 
 function updateCartUI() {
-  const cartBtn = document.getElementById("cartMenuBtn");
-  const cartCount = document.getElementById("cartCount");
+  const topCartBtn = document.getElementById("topCartBtn");
+  const bottomCartBtn = document.getElementById("bottomCartBtn");
+  const topCartCount = document.getElementById("topCartCount");
   const cartEmpty = document.getElementById("cartEmpty");
   const cartContent = document.getElementById("cartContent");
   const cartItems = document.getElementById("cartItems");
   const cartTotal = document.getElementById("cartTotal");
 
   const count = getCartCount();
-  cartCount.textContent = count;
+
+  topCartCount.textContent = count;
 
   if (count > 0) {
-    cartBtn.classList.remove("cart-hidden");
+    topCartBtn.classList.remove("cart-tab-hidden");
+    bottomCartBtn.classList.remove("cart-tab-hidden");
     cartEmpty.classList.add("hidden");
     cartContent.classList.remove("hidden");
   } else {
-    cartBtn.classList.add("cart-hidden");
+    topCartBtn.classList.add("cart-tab-hidden");
+    bottomCartBtn.classList.add("cart-tab-hidden");
     cartEmpty.classList.remove("hidden");
     cartContent.classList.add("hidden");
+
+    if (state.currentPage === "cart") {
+      switchPage("catalog");
+    }
   }
 
   cartItems.innerHTML = "";
@@ -182,31 +209,39 @@ function updateCartUI() {
     const row = document.createElement("div");
     row.className = "cart-item";
     row.innerHTML = `
-      <div class="cart-item-row">
+      <div class="cart-item-main">
         <div>
-          <div class="cart-item-name">${item.name}</div>
+          <h3 class="cart-item-name">${item.name}</h3>
           <div class="cart-item-meta">${formatPrice(item.price)} × ${item.quantity}</div>
+          <div class="cart-item-meta">Сумма: ${formatPrice(item.price * item.quantity)}</div>
         </div>
-        <div class="cart-item-actions">
-          <button class="secondary-btn" data-minus-id="${item.id}">-</button>
-          <button class="secondary-btn" data-plus-id="${item.id}">+</button>
-          <button class="secondary-btn" data-remove-id="${item.id}">Удалить</button>
-        </div>
+      </div>
+
+      <div class="cart-controls">
+        <button class="qty-btn" data-minus-id="${item.id}">−</button>
+        <button class="qty-btn" data-plus-id="${item.id}">+</button>
+        <button class="remove-btn" data-remove-id="${item.id}">Удалить</button>
       </div>
     `;
     cartItems.appendChild(row);
   });
 
   document.querySelectorAll("[data-minus-id]").forEach((btn) => {
-    btn.addEventListener("click", () => changeQuantity(Number(btn.dataset.minusId), -1));
+    btn.addEventListener("click", () => {
+      changeQuantity(Number(btn.dataset.minusId), -1);
+    });
   });
 
   document.querySelectorAll("[data-plus-id]").forEach((btn) => {
-    btn.addEventListener("click", () => changeQuantity(Number(btn.dataset.plusId), 1));
+    btn.addEventListener("click", () => {
+      changeQuantity(Number(btn.dataset.plusId), 1);
+    });
   });
 
   document.querySelectorAll("[data-remove-id]").forEach((btn) => {
-    btn.addEventListener("click", () => removeFromCart(Number(btn.dataset.removeId)));
+    btn.addEventListener("click", () => {
+      removeFromCart(Number(btn.dataset.removeId));
+    });
   });
 
   cartTotal.textContent = formatPrice(getCartTotal());
@@ -224,7 +259,6 @@ async function sendToGoogleSheets(payload) {
 
     const text = await response.text();
     console.log("Google Sheets response:", text);
-
     return true;
   } catch (error) {
     console.error("sendToGoogleSheets error:", error);
@@ -272,9 +306,9 @@ async function submitCartOrder() {
 }
 
 async function submitCustomOrder() {
-  const text = document.getElementById("customText").value.trim();
+  const customText = document.getElementById("customText").value.trim();
 
-  if (!text) {
+  if (!customText) {
     showToast("Опиши свой заказ");
     return;
   }
@@ -288,7 +322,7 @@ async function submitCustomOrder() {
     user_id: user.user_id,
     username: user.username,
     full_name: user.full_name,
-    products: text,
+    products: customText,
     total: "",
     delivery: delivery,
     comment: "Кастомный заказ",
@@ -307,7 +341,7 @@ async function submitCustomOrder() {
   }
 }
 
-document.querySelectorAll(".menu-btn").forEach((btn) => {
+document.querySelectorAll("[data-page]").forEach((btn) => {
   btn.addEventListener("click", () => {
     switchPage(btn.dataset.page);
   });
