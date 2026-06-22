@@ -1,3 +1,12 @@
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      ok: true,
+      message: "Apps Script Web App is working"
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
