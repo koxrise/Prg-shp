@@ -1,21 +1,19 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-ohe-X-XvRIBiAIss3Qzr8Q2tAH_8AhA1mC-fWC3e5lFeaEtZa-Iry61XHrhja5uV5Q/exec";
-
-async function sendToGoogleSheets(payload) {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error("sendToGoogleSheets error:", error);
-    return false;
-  }
-}
+fetch("https://script.google.com/macros/s/AKfycbz-ohe-X-XvRIBiAIss3Qzr8Q2tAH_8AhA1mC-fWC3e5lFeaEtZa-Iry61XHrhja5uV5Q/exec", {
+  method: "POST",
+  headers: { "Content-Type": "text/plain;charset=utf-8" },
+  body: JSON.stringify({
+    created_at: new Date().toLocaleString("ru-RU"),
+    type: "test",
+    user_id: "123456",
+    username: "test_user",
+    full_name: "Тест Тест",
+    products: "Проверка связи",
+    total: "0",
+    delivery: "нет",
+    comment: "Ручной тест",
+    status: "TEST"
+  })
+}).then(r => r.text()).then(console.log).catch(console.error);
 
 const PRODUCTS = [
   {
