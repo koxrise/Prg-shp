@@ -1,37 +1,106 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzACBWqe_q3xl1VCWpAlqR6Y8RzfY2v1nDuuJr3lmosjYEsAFQh1ZcDZaoXNtosnO1qVQ/exec";
 const ADMIN_CONTACT_URL = "https://t.me/cringeator";
 
-const products = [
+/*
+  ЗДЕСЬ ВАМ НУЖНО ЗАМЕНИТЬ ТЕСТОВЫЕ ТОВАРЫ НА ВАШИ РЕАЛЬНЫЕ.
+  Для каждого товара:
+  - id: уникальный короткий id
+  - name: название
+  - price: цена числом
+  - description: описание
+  - size: строка с размерами, можно пустую
+  - image: ссылка на картинку
+  - payment_url: ваша ссылка на оплату
+*/
+const PRODUCTS = [
   {
     id: "dicejail",
     name: "DiceJail",
     price: 1500,
-    description: "Тюрьма для самых непослушных дайсов. Исполнена из дерева, все 4 стороны поднимаются вверх. Возможно исполнение в трех цветах.",
-    size: "Размеры: 10×10×11",
+    description: "Тюрьма для самых непослушных дайсов. Исполнена из дерева, все 4 стороны поднимаются вверх.",
+    size: "Размеры: 10×10×11 см",
     image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg",
-    payment_url: "https://yookassa.ru/my/i/ajivKK4ijE__/l"
+    payment_url: "https://example.com/pay-dicejail"
   },
   {
     id: "dicetray",
     name: "Дайс трей",
     price: 1500,
-    description: "Лоток для кубиков, идеален для настольных игр.",
-    size: "Размеры: 21×21×3",
+    description: "Лоток для кубиков, идеален для настольных игр и красивой подачи аксессуаров.",
+    size: "Размеры: 21×21×3 см",
     image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg",
-    payment_url: "https://yookassa.ru/my/i/ajivPXotscnv/l"
+    payment_url: "https://example.com/pay-dicetray"
   }
 ];
 
-const cart = {};
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
-if (tg) {
+const state = {
+  currentScreen: "home",
+  history: ["home"],
+  cart: {}
+};
+
+function initTelegram() {
+  if (!tg) return;
+
   tg.ready();
   tg.expand();
+
+  applyTelegramTheme();
+  setupTelegramButtons();
+}
+
+function applyTelegramTheme() {
+  if (!tg || !tg.themeParams) return;
+
+  const theme = tg.themeParams;
+  const root = document.documentElement;
+
+  if (theme.bg_color) root.style.setProperty("--tg-bg", theme.bg_color);
+  if (theme.secondary_bg_color) root.style.setProperty("--tg-secondary-bg", theme.secondary_bg_color);
+  if (theme.text_color) root.style.setProperty("--tg-text", theme.text_color);
+  if (theme.hint_color) root.style.setProperty("--tg-hint", theme.hint_color);
+  if (theme.link_color) root.style.setProperty("--tg-link", theme.link_color);
+  if (theme.button_color) root.style.setProperty("--tg-button", theme.button_color);
+  if (theme.button_text_color) root.style.setProperty("--tg-button-text", theme.button_text_color);
+}
+
+function setupTelegramButtons() {
+  if (!tg) return;
+
+  if (tg.BackButton) {
+    tg.BackButton.onClick(goBack);
+  }
+
+  if (tg.MainButton) {
+    tg.MainButton.hide();
+    tg.MainButton.onClick(() => {
+      if (state.currentScreen === "cart") {
+        submitCartOrder();
+      }
+      if (state.currentScreen === "custom") {
+        submitCustomOrder();
+      }
+    });
+  }
+}
+
+function showToast(text) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = text;
+  toast.classList.remove("hidden");
+
+  clearTimeout(window.__toastTimeout);
+  window.__toastTimeout = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3200);
 }
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -39,64 +108,145 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function showToast(text) {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = text;
-  toast.classList.remove("hidden");
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => {
-    toast.classList.add("hidden");
-  }, 3200);
+function getTelegramUserData() {
+  const user = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+
+  return {
+    username: user?.username || "",
+    user_id: user?.id || "",
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    full_name: [user?.first_name || "", user?.last_name || ""].join(" ").trim()
+  };
 }
 
-function getProductById(productId) {
-  return products.find(item => item.id === productId);
+function navigate(screenName, push = true) {
+  const allScreens = document.querySelectorAll(".screen");
+  allScreens.forEach(screen => screen.classList.remove("active"));
+
+  const target = document.getElementById(`screen-${screenName}`);
+  if (target) {
+    target.classList.add("active");
+  }
+
+  state.currentScreen = screenName;
+
+  if (push) {
+    const last = state.history[state.history.length - 1];
+    if (last !== screenName) {
+      state.history.push(screenName);
+    }
+  }
+
+  updateBackButton();
+  updateMainButton();
 }
 
-function addToCart(productId) {
-  const item = getProductById(productId);
-  if (!item) {
-    showToast("Товар не найден.");
+function goBack() {
+  if (state.currentScreen === "home") return;
+
+  if (state.history.length > 1) {
+    state.history.pop();
+    const prev = state.history[state.history.length - 1] || "home";
+    navigate(prev, false);
+  } else {
+    navigate("home", false);
+  }
+}
+
+function updateBackButton() {
+  const localBtn = document.getElementById("backBtnInside");
+  const show = state.currentScreen !== "home";
+
+  if (localBtn) {
+    localBtn.classList.toggle("hidden", !show);
+  }
+
+  if (tg && tg.BackButton) {
+    if (show) tg.BackButton.show();
+    else tg.BackButton.hide();
+  }
+}
+
+function updateMainButton() {
+  if (!tg || !tg.MainButton) return;
+
+  if (state.currentScreen === "cart" && getCartItems().length) {
+    tg.MainButton.setText("Оформить заказ");
+    tg.MainButton.show();
     return;
   }
 
-  if (!cart[productId]) {
-    cart[productId] = {
+  if (state.currentScreen === "custom") {
+    tg.MainButton.setText("Отправить заявку");
+    tg.MainButton.show();
+    return;
+  }
+
+  tg.MainButton.hide();
+}
+
+function getProductById(id) {
+  return PRODUCTS.find(item => item.id === id);
+}
+
+function addToCart(productId) {
+  const product = getProductById(productId);
+  if (!product) return;
+
+  if (!state.cart[productId]) {
+    state.cart[productId] = {
       productId,
       qty: 0,
       delivery: false
     };
   }
 
-  cart[productId].qty += 1;
+  state.cart[productId].qty += 1;
   renderCart();
-  showToast(`Товар «${item.name}» добавлен в корзину.`);
+  updateCartFab();
+  showToast(`Товар «${product.name}» добавлен в корзину.`);
 }
 
-function changeQty(productId, delta) {
-  if (!cart[productId]) return;
+function changeCartQty(productId, delta) {
+  const item = state.cart[productId];
+  if (!item) return;
 
-  cart[productId].qty += delta;
+  item.qty += delta;
 
-  if (cart[productId].qty <= 0) {
-    delete cart[productId];
+  if (item.qty <= 0) {
+    delete state.cart[productId];
   }
 
   renderCart();
+  updateCartFab();
+
+  if (!getCartItems().length && state.currentScreen === "cart") {
+    navigate("catalog");
+  }
+}
+
+function removeFromCart(productId) {
+  delete state.cart[productId];
+  renderCart();
+  updateCartFab();
+
+  if (!getCartItems().length && state.currentScreen === "cart") {
+    navigate("catalog");
+  }
 }
 
 function toggleCartDelivery(productId, checked) {
-  if (!cart[productId]) return;
-  cart[productId].delivery = checked;
-  renderCart();
+  if (!state.cart[productId]) return;
+  state.cart[productId].delivery = checked;
 }
 
 function getCartItems() {
-  return Object.values(cart)
+  return Object.values(state.cart)
     .map(item => {
       const product = getProductById(item.productId);
       if (!product) return null;
+
       return {
         ...item,
         product,
@@ -106,138 +256,150 @@ function getCartItems() {
     .filter(Boolean);
 }
 
+function getCartCount() {
+  return getCartItems().reduce((sum, item) => sum + item.qty, 0);
+}
+
 function getCartTotal() {
   return getCartItems().reduce((sum, item) => sum + item.lineTotal, 0);
 }
 
-function buildProductsHtml() {
-  return products.map(product => `
+function updateCartFab() {
+  const fab = document.getElementById("cartFab");
+  const countEl = document.getElementById("cartFabCount");
+  const count = getCartCount();
+
+  if (!fab || !countEl) return;
+
+  if (count > 0) {
+    fab.classList.remove("hidden");
+    countEl.textContent = String(count);
+  } else {
+    fab.classList.add("hidden");
+    countEl.textContent = "0";
+  }
+
+  updateMainButton();
+}
+
+function renderProducts() {
+  const container = document.getElementById("productsGrid");
+  if (!container) return;
+
+  if (!PRODUCTS.length) {
+    container.innerHTML = `<div class="empty-state-box">Товары пока не добавлены.</div>`;
+    return;
+  }
+
+  container.innerHTML = PRODUCTS.map(product => `
     <article class="product-card">
-      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
+      <img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
       <div class="product-body">
-        <div class="product-title">
-          <h3>${escapeHtml(product.name)}</h3>
-          <div class="price">${product.price} ₽</div>
+        <div class="product-top">
+          <h3 class="product-title">${escapeHtml(product.name)}</h3>
+          <div class="product-price">${product.price} ₽</div>
         </div>
 
         <div class="product-desc">${escapeHtml(product.description)}</div>
-        <div class="meta">${escapeHtml(product.size)}</div>
+        <div class="product-meta">${escapeHtml(product.size || "Размеры уточняются")}</div>
 
-        <div class="actions">
-          <button class="btn btn-primary" data-add="${escapeHtml(product.id)}">Добавить в корзину</button>
-          <a class="btn btn-secondary" href="${escapeHtml(product.payment_url)}" target="_blank" rel="noopener noreferrer">Оплатить отдельно</a>
-          <a class="btn btn-outline" href="${ADMIN_CONTACT_URL}" target="_blank" rel="noopener noreferrer">Написать администратору</a>
+        <div class="product-actions">
+          <button class="primary-btn" type="button" data-add="${escapeHtml(product.id)}">
+            В корзину
+          </button>
+
+          <a class="secondary-btn" href="${escapeHtml(product.payment_url)}" target="_blank" rel="noopener noreferrer">
+            Оплатить отдельно
+          </a>
+
+          <a class="ghost-btn" href="${ADMIN_CONTACT_URL}" target="_blank" rel="noopener noreferrer">
+            Написать администратору
+          </a>
         </div>
       </div>
     </article>
   `).join("");
-}
 
-function renderProducts() {
-  const container = document.getElementById("products");
-  if (!container) return;
-
-  container.innerHTML = buildProductsHtml();
-
-  container.querySelectorAll("[data-add]").forEach(button => {
-    button.addEventListener("click", () => {
-      addToCart(button.dataset.add);
-    });
+  container.querySelectorAll("[data-add]").forEach(btn => {
+    btn.addEventListener("click", () => addToCart(btn.dataset.add));
   });
-}
-
-function buildCartHtml() {
-  const items = getCartItems();
-
-  if (!items.length) {
-    return `<div class="empty-box">Корзина пока пуста.</div>`;
-  }
-
-  const itemsHtml = items.map(item => `
-    <div class="cart-item">
-      <div>
-        <div class="cart-item-name">${escapeHtml(item.product.name)}</div>
-        <div class="cart-item-meta">${item.product.price} ₽ × ${item.qty} = ${item.lineTotal} ₽</div>
-        <label class="checkbox-line">
-          <input type="checkbox" data-cart-delivery="${escapeHtml(item.product.id)}" ${item.delivery ? "checked" : ""}>
-          <span>Нужна доставка для этой позиции</span>
-        </label>
-      </div>
-
-      <div class="qty-row">
-        <button class="qty-btn" data-minus="${escapeHtml(item.product.id)}">−</button>
-        <div class="qty-value">${item.qty}</div>
-        <button class="qty-btn" data-plus="${escapeHtml(item.product.id)}">+</button>
-      </div>
-
-      <div>
-        <button class="btn btn-danger" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
-      </div>
-    </div>
-  `).join("");
-
-  const total = getCartTotal();
-
-  return `
-    ${itemsHtml}
-    <div class="cart-summary">
-      <div class="summary-row">
-        <span>Итого</span>
-        <span>${total} ₽</span>
-      </div>
-
-      <div class="cart-actions">
-        <button class="btn btn-primary" id="submitCartBtn">Оформить весь заказ</button>
-        <a class="btn btn-outline" href="${ADMIN_CONTACT_URL}" target="_blank" rel="noopener noreferrer">Написать администратору</a>
-      </div>
-    </div>
-  `;
 }
 
 function renderCart() {
-  const box = document.getElementById("cartBox");
-  if (!box) return;
+  const panel = document.getElementById("cartPanel");
+  if (!panel) return;
 
-  box.innerHTML = buildCartHtml();
+  const items = getCartItems();
 
-  box.querySelectorAll("[data-minus]").forEach(button => {
-    button.addEventListener("click", () => changeQty(button.dataset.minus, -1));
-  });
-
-  box.querySelectorAll("[data-plus]").forEach(button => {
-    button.addEventListener("click", () => changeQty(button.dataset.plus, 1));
-  });
-
-  box.querySelectorAll("[data-remove]").forEach(button => {
-    button.addEventListener("click", () => {
-      delete cart[button.dataset.remove];
-      renderCart();
-    });
-  });
-
-  box.querySelectorAll("[data-cart-delivery]").forEach(checkbox => {
-    checkbox.addEventListener("change", () => {
-      toggleCartDelivery(checkbox.dataset.cartDelivery, checkbox.checked);
-    });
-  });
-
-  const submitBtn = document.getElementById("submitCartBtn");
-  if (submitBtn) {
-    submitBtn.addEventListener("click", submitCartOrder);
+  if (!items.length) {
+    panel.innerHTML = `<div class="empty-state-box">Корзина пока пуста.</div>`;
+    updateMainButton();
+    return;
   }
+
+  panel.innerHTML = `
+    ${items.map(item => `
+      <div class="cart-item">
+        <div class="cart-head">
+          <div>
+            <div class="cart-name">${escapeHtml(item.product.name)}</div>
+            <div class="cart-line">${item.product.price} ₽ × ${item.qty} = ${item.lineTotal} ₽</div>
+          </div>
+          <button class="remove-btn" type="button" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
+        </div>
+
+        <label class="checkbox-row">
+          <input type="checkbox" data-delivery="${escapeHtml(item.product.id)}" ${item.delivery ? "checked" : ""}>
+          <span>Нужна доставка для этой позиции</span>
+        </label>
+
+        <div class="qty-row">
+          <button class="qty-btn" type="button" data-minus="${escapeHtml(item.product.id)}">−</button>
+          <div class="qty-value">${item.qty}</div>
+          <button class="qty-btn" type="button" data-plus="${escapeHtml(item.product.id)}">+</button>
+        </div>
+      </div>
+    `).join("")}
+
+    <div class="cart-summary">
+      <div class="summary-line">
+        <span>Итого</span>
+        <span>${getCartTotal()} ₽</span>
+      </div>
+
+      <button class="primary-btn" type="button" id="cartSubmitLocalBtn">
+        Оформить весь заказ
+      </button>
+    </div>
+  `;
+
+  panel.querySelectorAll("[data-minus]").forEach(btn => {
+    btn.addEventListener("click", () => changeCartQty(btn.dataset.minus, -1));
+  });
+
+  panel.querySelectorAll("[data-plus]").forEach(btn => {
+    btn.addEventListener("click", () => changeCartQty(btn.dataset.plus, 1));
+  });
+
+  panel.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", () => removeFromCart(btn.dataset.remove));
+  });
+
+  panel.querySelectorAll("[data-delivery]").forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+      toggleCartDelivery(checkbox.dataset.delivery, checkbox.checked);
+    });
+  });
+
+  const localSubmitBtn = document.getElementById("cartSubmitLocalBtn");
+  if (localSubmitBtn) {
+    localSubmitBtn.addEventListener("click", submitCartOrder);
+  }
+
+  updateMainButton();
 }
 
-function getTelegramUser() {
-  const user = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
-  return {
-    user_id: user && user.id ? user.id : "",
-    username: user && user.username ? user.username : "",
-    first_name: user && user.first_name ? user.first_name : "",
-    last_name: user && user.last_name ? user.last_name : ""
-  };
-}
-
-async function sendToGoogleSheets(payload) {
+async function postToGoogleSheets(payload) {
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
@@ -249,79 +411,65 @@ async function sendToGoogleSheets(payload) {
 
     return response.ok;
   } catch (error) {
-    console.error("Google Sheets error:", error);
-    return false;
-  }
-}
-
-function sendToTelegramBot(payload) {
-  if (!tg || typeof tg.sendData !== "function") {
-    return false;
-  }
-
-  try {
-    tg.sendData(JSON.stringify(payload));
-    return true;
-  } catch (error) {
-    console.error("Telegram sendData error:", error);
+    console.error("Google Sheets POST error:", error);
     return false;
   }
 }
 
 async function submitCartOrder() {
   const items = getCartItems();
+
   if (!items.length) {
     showToast("Корзина пуста.");
     return;
   }
 
-  const telegramUser = getTelegramUser();
-  const productsText = items.map(item => {
-    const deliveryText = item.delivery ? "доставка: да" : "доставка: нет";
-    return `${item.product.name} × ${item.qty} (${item.lineTotal} ₽, ${deliveryText})`;
-  }).join(" | ");
+  const user = getTelegramUserData();
+  const productsText = items
+    .map(item => `${item.product.name} × ${item.qty} (${item.lineTotal} ₽, доставка: ${item.delivery ? "да" : "нет"})`)
+    .join(" | ");
 
-  const paymentLinks = items.map(item => `${item.product.name}: ${item.product.payment_url}`).join(" | ");
-  const anyDelivery = items.some(item => item.delivery) ? "да" : "нет";
+  const linksText = items
+    .map(item => `${item.product.name}: ${item.product.payment_url}`)
+    .join(" | ");
 
   const payload = {
     type: "cart_order",
-    created_at: new Date().toISOString(),
-    ...telegramUser,
-    full_name: `${telegramUser.first_name} ${telegramUser.last_name}`.trim(),
+    created_at: new Date().toLocaleString("ru-RU"),
+    username: user.username,
+    user_id: user.user_id,
+    full_name: user.full_name,
     products: productsText,
     total: getCartTotal(),
-    delivery: anyDelivery,
-    payment_link: paymentLinks,
+    delivery: items.some(item => item.delivery) ? "да" : "нет",
+    payment_link: linksText,
     comment: "Заказ из корзины",
     status: "Новая заявка"
   };
 
-  const [sheetOk] = await Promise.all([
-    sendToGoogleSheets(payload)
-  ]);
+  const ok = await postToGoogleSheets(payload);
 
-  const botOk = sendToTelegramBot(payload);
-
-  if (sheetOk || botOk) {
+  if (ok) {
     showToast("Заказ отправлен. Администратор свяжется с вами.");
-    Object.keys(cart).forEach(key => delete cart[key]);
+    state.cart = {};
     renderCart();
+    updateCartFab();
+    navigate("home");
   } else {
-    showToast("Не удалось отправить заказ автоматически. Напишите администратору вручную.");
+    showToast("Не удалось отправить заказ. Напишите администратору вручную.");
   }
 }
 
 async function submitCustomOrder() {
-  const title = document.getElementById("custom_title");
-  const description = document.getElementById("custom_description");
-  const size = document.getElementById("custom_size");
-  const qty = document.getElementById("custom_qty");
-  const delivery = document.getElementById("custom_delivery");
-  const accept = document.getElementById("custom_accept");
+  const title = document.getElementById("customTitle");
+  const description = document.getElementById("customDescription");
+  const size = document.getElementById("customSize");
+  const qty = document.getElementById("customQty");
+  const delivery = document.getElementById("customDelivery");
+  const accept = document.getElementById("customAccept");
 
   if (!title || !description || !qty || !delivery || !accept) {
-    showToast("Ошибка формы. Обновите страницу.");
+    showToast("Форма не найдена.");
     return;
   }
 
@@ -340,13 +488,14 @@ async function submitCustomOrder() {
     return;
   }
 
-  const telegramUser = getTelegramUser();
+  const user = getTelegramUserData();
 
   const payload = {
     type: "custom_order",
-    created_at: new Date().toISOString(),
-    ...telegramUser,
-    full_name: `${telegramUser.first_name} ${telegramUser.last_name}`.trim(),
+    created_at: new Date().toLocaleString("ru-RU"),
+    username: user.username,
+    user_id: user.user_id,
+    full_name: user.full_name,
     products: `Кастомный заказ: ${title.value.trim()}`,
     total: "Уточняется",
     delivery: delivery.checked ? "да" : "нет",
@@ -358,35 +507,52 @@ async function submitCustomOrder() {
     status: "Новая кастомная заявка"
   };
 
-  const [sheetOk] = await Promise.all([
-    sendToGoogleSheets(payload)
-  ]);
+  const ok = await postToGoogleSheets(payload);
 
-  const botOk = sendToTelegramBot(payload);
-
-  if (sheetOk || botOk) {
-    showToast("Кастомная заявка отправлена. Администратор свяжется с вами.");
+  if (ok) {
+    showToast("Заявка отправлена. Администратор свяжется с вами в течение 24 часов.");
     title.value = "";
     description.value = "";
     size.value = "";
-    qty.value = 1;
+    qty.value = "1";
     delivery.checked = false;
     accept.checked = false;
+    navigate("home");
   } else {
-    showToast("Не удалось отправить заявку автоматически. Напишите администратору вручную.");
+    showToast("Не удалось отправить заявку. Напишите администратору вручную.");
   }
 }
 
-function bindCustomForm() {
-  const button = document.getElementById("customSubmitBtn");
-  if (!button) return;
-  button.addEventListener("click", submitCustomOrder);
+function bindEvents() {
+  document.querySelectorAll("[data-nav]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      navigate(btn.dataset.nav);
+    });
+  });
+
+  const localBackBtn = document.getElementById("backBtnInside");
+  if (localBackBtn) {
+    localBackBtn.addEventListener("click", goBack);
+  }
+
+  const cartFab = document.getElementById("cartFab");
+  if (cartFab) {
+    cartFab.addEventListener("click", () => navigate("cart"));
+  }
+
+  const customSubmitBtn = document.getElementById("customSubmitBtn");
+  if (customSubmitBtn) {
+    customSubmitBtn.addEventListener("click", submitCustomOrder);
+  }
 }
 
 function init() {
+  initTelegram();
+  bindEvents();
   renderProducts();
   renderCart();
-  bindCustomForm();
+  updateCartFab();
+  navigate("home", false);
 }
 
 if (document.readyState === "loading") {
