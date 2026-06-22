@@ -9,8 +9,7 @@ const PRODUCTS = [
     price: 1500,
     description: "Тюрьма для непослушных дайсов из дерева. Все 4 стороны поднимаются вверх.",
     size: "Размеры: 10×10×11 см",
-    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg",
-    payment_url: "https://example.com/pay-dicejail"
+    image: "https://i.ibb.co/W4kMscBv/Frame-2.jpg"
   },
   {
     id: "dicetray",
@@ -19,8 +18,7 @@ const PRODUCTS = [
     price: 1500,
     description: "Лоток для кубиков, удобный аксессуар для настольных игр.",
     size: "Размеры: 21×21×3 см",
-    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg",
-    payment_url: "https://example.com/pay-dicetray"
+    image: "https://i.ibb.co/Mydq6V17/Frame-1.jpg"
   }
 ];
 
@@ -29,7 +27,8 @@ const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : 
 const state = {
   currentScreen: "catalog",
   cart: {},
-  search: ""
+  search: "",
+  delivery: false
 };
 
 function initTelegram() {
@@ -41,8 +40,12 @@ function initTelegram() {
   if (tg.MainButton) {
     tg.MainButton.hide();
     tg.MainButton.onClick(() => {
-      if (state.currentScreen === "cart") submitCartOrder();
-      if (state.currentScreen === "custom") submitCustomOrder();
+      if (state.currentScreen === "cart") {
+        submitCartOrder();
+      }
+      if (state.currentScreen === "custom") {
+        submitCustomOrder();
+      }
     });
   }
 }
@@ -135,8 +138,7 @@ function addToCart(productId) {
   if (!state.cart[productId]) {
     state.cart[productId] = {
       productId,
-      qty: 0,
-      delivery: false
+      qty: 0
     };
   }
 
@@ -175,11 +177,6 @@ function changeQty(productId, delta) {
   }
 }
 
-function setDelivery(productId, checked) {
-  if (!state.cart[productId]) return;
-  state.cart[productId].delivery = checked;
-}
-
 function getCartItems() {
   return Object.values(state.cart)
     .map(item => {
@@ -206,18 +203,15 @@ function getCartTotal() {
 function updateCartButton() {
   const cartButton = document.getElementById("cartButton");
   const cartBadge = document.getElementById("cartBadge");
-  const cartTabButton = document.getElementById("cartTabButton");
   const count = getCartCount();
 
-  if (!cartButton || !cartBadge || !cartTabButton) return;
+  if (!cartButton || !cartBadge) return;
 
   if (count > 0) {
     cartButton.classList.remove("hidden");
-    cartTabButton.classList.remove("hidden");
     cartBadge.textContent = String(count);
   } else {
     cartButton.classList.add("hidden");
-    cartTabButton.classList.add("hidden");
     cartBadge.textContent = "0";
   }
 
@@ -247,7 +241,6 @@ function renderProducts() {
 
         <div class="product-actions">
           <button class="primary-button" type="button" data-add="${escapeHtml(product.id)}">В корзину</button>
-          <a class="secondary-button" href="${escapeHtml(product.payment_url)}" target="_blank" rel="noopener noreferrer">Оплатить отдельно</a>
         </div>
       </div>
     </article>
@@ -281,11 +274,6 @@ function renderCart() {
           <button class="remove-button" type="button" data-remove="${escapeHtml(item.product.id)}">Удалить</button>
         </div>
 
-        <label class="check-row">
-          <input type="checkbox" data-delivery="${escapeHtml(item.product.id)}" ${item.delivery ? "checked" : ""}>
-          <span>Нужна доставка для этой позиции</span>
-        </label>
-
         <div class="qty-row">
           <button class="qty-button" type="button" data-minus="${escapeHtml(item.product.id)}">−</button>
           <div class="qty-value">${item.qty}</div>
@@ -299,6 +287,12 @@ function renderCart() {
         <span>Итого</span>
         <span>${getCartTotal()} ₽</span>
       </div>
+
+      <label class="check-row" style="margin-bottom: 14px;">
+        <input type="checkbox" id="cartDeliveryCheckbox" ${state.delivery ? "checked" : ""}>
+        <span>Нужна доставка</span>
+      </label>
+
       <button class="primary-button" type="button" id="cartSubmitButton">Оформить весь заказ</button>
     </div>
   `;
@@ -315,9 +309,12 @@ function renderCart() {
     button.addEventListener("click", () => changeQty(button.dataset.plus, 1));
   });
 
-  panel.querySelectorAll("[data-delivery]").forEach(checkbox => {
-    checkbox.addEventListener("change", () => setDelivery(checkbox.dataset.delivery, checkbox.checked));
-  });
+  const deliveryCheckbox = document.getElementById("cartDeliveryCheckbox");
+  if (deliveryCheckbox) {
+    deliveryCheckbox.addEventListener("change", () => {
+      state.delivery = deliveryCheckbox.checked;
+    });
+  }
 
   const submitButton = document.getElementById("cartSubmitButton");
   if (submitButton) {
@@ -334,6 +331,7 @@ async function sendToGoogleSheets(payload) {
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
+      redirect: "follow",
       body: JSON.stringify(payload)
     });
 
@@ -361,11 +359,11 @@ async function submitCartOrder() {
     user_id: user.user_id,
     full_name: user.full_name,
     products: items.map(item =>
-      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽, доставка: ${item.delivery ? "да" : "нет"})`
+      `${item.product.name} × ${item.qty} (${item.lineTotal} ₽)`
     ).join(" | "),
     total: getCartTotal(),
-    delivery: items.some(item => item.delivery) ? "да" : "нет",
-    payment_link: items.map(item => `${item.product.name}: ${item.product.payment_url}`).join(" | "),
+    delivery: state.delivery ? "да" : "нет",
+    payment_link: "",
     comment: "Заказ из корзины",
     status: "Новая заявка"
   };
@@ -375,6 +373,7 @@ async function submitCartOrder() {
   if (ok) {
     showToast("Заказ отправлен. Мы скоро свяжемся с вами.");
     state.cart = {};
+    state.delivery = false;
     renderCart();
     updateCartButton();
     setScreen("catalog");
