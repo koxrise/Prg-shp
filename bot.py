@@ -1,6 +1,11 @@
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+BOT_TOKEN = "ВАШ_ТОКЕН"
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (
-        "Здравствуйте! Это Paragon Shop.\n\n"
-        "Нажмите кнопку ниже, чтобы открыть магазин."
-    )
-    await update.message.reply_text(text, reply_markup=get_main_keyboard())
+    await update.message.reply_text("START OK")
+
+app = Application.builder().token(BOT_TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.run_polling()
